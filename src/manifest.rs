@@ -40,15 +40,12 @@ type Broadcast = String;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Block {
-    Standard(StandardBlock),
-    // TODO: investigate different numeral modes
-    Simple(u8, String),
-    Advanced(u8, String, String),
-    AdvancedWithPos(u8, String, String, u32, u32),
+    Full(FullBlock),
+    Short(ShortBlock),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StandardBlock {
+pub struct FullBlock {
     opcode: String,
     next: Option<String>,
     parent: Option<String>,
@@ -62,9 +59,35 @@ pub struct StandardBlock {
     mutation: Option<Mutation>,
 }
 
-// TODO
-type Input = ();
-type Field = ();
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ShortBlock {
+    // TODO: investigate different numeral modes
+    Simple(u8, String),
+    Advanced(u8, String, String),
+    AdvancedWithPos(u8, String, String, u32, u32),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Input {
+    Simple(u8, IdOrAnonymous),
+    Obscured(u8, IdOrAnonymous, IdOrAnonymous),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IdOrAnonymous {
+    Id(String),
+    Anonymous(ShortBlock),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Field {
+    Simple(String),
+    WithId(String, String),
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mutation {
