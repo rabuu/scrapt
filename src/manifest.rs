@@ -12,30 +12,93 @@ pub struct Manifest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Value {
+    Num(Number),
+    Str(String),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Number {
+    Int(i64),
+    Float(f32),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Argument {
+    Str(String),
+    Bool(bool),
+}
+
+pub type Id = String;
+pub type Name = String;
+pub type Coord = u32;
+pub type CodeCoord = u32;
+pub type Percentage = u8;
+pub type Angle = u16;
+pub type Opcode = String;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IdOrAnonymous {
+    Id(String),
+    Anonymous(ShortBlock),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CodePos {
+    x: CodeCoord,
+    y: CodeCoord,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Target {
     is_stage: bool,
-    name: String,
-    variables: HashMap<String, Variable>,
-    lists: HashMap<String, List>,
-    broadcasts: HashMap<String, Broadcast>,
-    blocks: HashMap<String, Block>,
-    comments: HashMap<String, Comment>,
+    name: Name,
+    variables: HashMap<Id, Variable>,
+    lists: HashMap<Id, List>,
+    broadcasts: HashMap<Id, Broadcast>,
+    blocks: HashMap<Id, Block>,
+    comments: HashMap<Id, Comment>,
     current_costume: u32,
     costumes: Vec<Asset>,
     sounds: Vec<Asset>,
     layer_order: u32,
-    volume: u8,
+    volume: Percentage,
 
-    // stage
-    tempo: Option<u32>,
-    video_state: Option<VideoState>,
-    video_transparency: Option<u8>,
-    text_to_speech_language: Option<Language>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    stage: Option<StageTarget>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    sprite: Option<SpriteTarget>,
 }
 
-type Variable = (String, i32, bool);
-type List = (String, Vec<String>);
-type Broadcast = String;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StageTarget {
+    tempo: u32,
+    video_state: VideoState,
+    video_transparency: Percentage,
+    text_to_speech_language: Language,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SpriteTarget {
+    visible: bool,
+    x: Coord,
+    y: Coord,
+    size: Percentage,
+    direction: Angle,
+    draggable: bool,
+    rotation_style: RotationStyle,
+}
+
+pub type Variable = (Name, Value, bool);
+pub type List = (Name, Vec<Value>);
+pub type Broadcast = Name;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -46,16 +109,22 @@ pub enum Block {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FullBlock {
-    opcode: String,
-    next: Option<String>,
-    parent: Option<String>,
-    inputs: HashMap<String, Input>,
-    fields: HashMap<String, Field>,
+    opcode: Opcode,
+    next: Option<Id>,
+    parent: Option<Id>,
+    inputs: HashMap<Name, Input>,
+    fields: HashMap<Name, Field>,
     shadow: bool,
     top_level: bool,
-    x: Option<u32>,
-    y: Option<u32>,
+
+    // top level blocks
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    pos: Option<CodePos>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     mutation: Option<Mutation>,
 }
 
@@ -63,9 +132,9 @@ pub struct FullBlock {
 #[serde(untagged)]
 pub enum ShortBlock {
     // TODO: investigate different numeral modes
-    Simple(u8, String),
-    Advanced(u8, String, String),
-    AdvancedWithPos(u8, String, String, u32, u32),
+    Simple(u8, Value),
+    Advanced(u8, Name, Id),
+    AdvancedWithPos(u8, Name, Id, CodeCoord, CodeCoord),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -77,16 +146,9 @@ pub enum Input {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum IdOrAnonymous {
-    Id(String),
-    Anonymous(ShortBlock),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
 pub enum Field {
-    Simple(String),
-    WithId(String, String),
+    Simple(Value),
+    WithId(Value, Id),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,41 +156,47 @@ pub struct Mutation {
     tag_name: String,
     children: [(); 0],
 
-    // "procedures_prototype" and "procedures_call"
-    proccode: Option<String>,
-    argumentids: Option<Vec<String>>,
-    warp: Option<bool>,
-
-    // "procedures_prototype"
-    argumentnames: Option<Vec<String>>,
-    argumentdefaults: Option<Vec<ArgDefault>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    proc: Option<ProcMutation>,
 
     // "control_stop"
+    #[serde(skip_serializing_if = "Option::is_none")]
     hasnext: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ArgDefault {
-    Str(String),
-    Bool(bool),
+pub struct ProcMutation {
+    proccode: String,
+    argumentids: Vec<Id>,
+    warp: bool,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    prototype: Option<PrototypeMutation>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PrototypeMutation {
+    argumentnames: Vec<Name>,
+    argumentdefaults: Vec<Argument>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Comment {
-    block_id: String,
-    x: u32,
-    y: u32,
-    width: u32,
-    height: u32,
+    block_id: Id,
+    x: CodeCoord,
+    y: CodeCoord,
+    width: CodeCoord,
+    height: CodeCoord,
     minimized: bool,
-    test: String,
+    text: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Asset {
-    asset_id: String,
-    name: String,
+    asset_id: Id,
+    name: Name,
     md5ext: String,
     data_format: String,
 
@@ -141,8 +209,8 @@ pub struct Asset {
 pub enum AssetType {
     Costume {
         bitmap_resolution: Option<f32>,
-        rotation_center_x: u32,
-        rotation_center_y: u32,
+        rotation_center_x: Coord,
+        rotation_center_y: Coord,
     },
     Sound {
         rate: f32,
@@ -186,4 +254,50 @@ pub enum Language {
     Welsh,
     Hindi,
     Arabic,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum RotationStyle {
+    #[serde(rename = "all around")]
+    AllAround,
+    #[serde(rename = "left-right")]
+    LeftRight,
+    #[serde(rename = "don't rotate")]
+    DontRotate,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Monitor {
+    id: Id,
+    mode: MonitorMode,
+    opcode: Opcode,
+    params: HashMap<Name, String>,
+    sprite_name: Option<Name>,
+    value: MonitorValue,
+    width: Coord,
+    height: Coord,
+    x: Coord,
+    y: Coord,
+    visible: bool,
+
+    // not belonging to lists
+    slider_min: Option<Number>,
+    slider_max: Option<Number>,
+    is_discrete: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MonitorMode {
+    Default,
+    Large,
+    Slider,
+    List,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MonitorValue {
+    Value(Value),
+    Array(Vec<Value>),
 }
