@@ -8,5 +8,5 @@ fn main() {
 
     let manifest: unscratch::Manifest = serde_json::from_str(&file).unwrap();
 
-    println!("{:?}", manifest);
+    println!("{:#?}", manifest);
 }

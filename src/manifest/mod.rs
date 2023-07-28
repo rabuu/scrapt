@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-mod extension;
-mod meta;
-mod monitor;
-mod target;
+pub mod extension;
+pub mod meta;
+pub mod monitor;
+pub mod target;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,7 +40,7 @@ mod common {
 
     pub type Id = String;
     pub type Name = String;
-    pub type Coord = u32;
+    pub type Coord = f64;
     pub type CodeCoord = u32;
     pub type Percentage = u8;
     pub type Angle = u16;

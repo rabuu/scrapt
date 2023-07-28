@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::common::*;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Target {
     #[serde(default = "defaults::is_stage")]
     pub is_stage: bool,
@@ -30,6 +31,7 @@ pub struct Target {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct StageTarget {
     pub tempo: u32,
     pub video_state: VideoState,
@@ -40,6 +42,7 @@ pub struct StageTarget {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SpriteTarget {
     #[serde(default = "defaults::sprite_visibility")]
     pub visible: bool,
@@ -56,7 +59,13 @@ pub struct SpriteTarget {
     pub rotation_style: RotationStyle,
 }
 
-pub type Variable = (Name, Value, bool);
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Variable {
+    Simple(Name, Value),
+    MaybeCloud(Name, Value, bool),
+}
+
 pub type List = (Name, Vec<Value>);
 pub type Broadcast = Name;
 
@@ -68,6 +77,7 @@ pub enum Block {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FullBlock {
     pub opcode: Opcode,
     pub next: Option<Id>,
@@ -108,10 +118,12 @@ pub enum Input {
 #[serde(untagged)]
 pub enum Field {
     Simple(Value),
+    MaybeWithId(Value, Option<Id>),
     WithId(Value, Id),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Mutation {
     pub tag_name: String,
     pub children: [(); 0],
@@ -126,6 +138,7 @@ pub struct Mutation {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProcMutation {
     pub proccode: String,
     pub argumentids: Vec<Id>,
@@ -138,12 +151,14 @@ pub struct ProcMutation {
 
 // TODO: this may be wrong
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PrototypeMutation {
     pub argumentnames: Vec<Name>,
     pub argumentdefaults: Vec<Argument>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Comment {
     pub block_id: Id,
     pub x: CodeCoord,
@@ -155,28 +170,36 @@ pub struct Comment {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Asset {
     pub asset_id: Id,
     pub name: Name,
     pub md5ext: String,
     pub data_format: String,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub asset_type: AssetType,
+    pub costume: Option<CostumeAsset>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    pub sound: Option<SoundAsset>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum AssetType {
-    Costume {
-        bitmap_resolution: Option<f32>,
-        rotation_center_x: Coord,
-        rotation_center_y: Coord,
-    },
-    Sound {
-        rate: f32,
-        sample_count: u32,
-    },
+#[serde(rename_all = "camelCase")]
+pub struct CostumeAsset {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bitmap_resolution: Option<Number>,
+    pub rotation_center_x: Coord,
+    pub rotation_center_y: Coord,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SoundAsset {
+    pub rate: f32,
+    pub sample_count: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -245,7 +268,7 @@ mod defaults {
     }
 
     pub const fn coord_origin() -> Coord {
-        0
+        0.0
     }
 
     pub const fn sprite_size() -> Percentage {
