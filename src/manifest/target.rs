@@ -123,31 +123,39 @@ pub struct Mutation {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub proc: Option<ProcMutation>,
+    pub special_mutation: Option<SpecialMutation>,
+}
 
-    // "control_stop"
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub hasnext: Option<bool>,
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum SpecialMutation {
+    Procedure(ProcedureMutation),
+    ControlStop(ControlStopMutation),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProcMutation {
+pub struct ProcedureMutation {
     pub proccode: String,
-    pub argumentids: Vec<Id>,
-    pub warp: bool,
+    pub argumentids: ArgArray,
+    pub warp: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
     pub prototype: Option<PrototypeMutation>,
 }
 
-// TODO: this may be wrong
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ControlStopMutation {
+    pub hasnext: bool,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrototypeMutation {
-    pub argumentnames: Vec<Name>,
-    pub argumentdefaults: Vec<Argument>,
+    pub argumentnames: ArgArray,
+    pub argumentdefaults: ArgArray,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
