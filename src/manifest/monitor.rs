@@ -19,10 +19,17 @@ pub struct Monitor {
     pub y: Coord,
     pub visible: bool,
 
-    // not belonging to lists
-    pub slider_min: Option<Number>,
-    pub slider_max: Option<Number>,
-    pub is_discrete: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(flatten)]
+    pub not_list: Option<NotListMonitor>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotListMonitor {
+    pub slider_min: Number,
+    pub slider_max: Number,
+    pub is_discrete: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

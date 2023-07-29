@@ -7,7 +7,6 @@ use super::common::*;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Target {
-    #[serde(default = "defaults::is_stage")]
     pub is_stage: bool,
     pub name: Name,
     pub variables: HashMap<Id, Variable>,
@@ -21,13 +20,15 @@ pub struct Target {
     pub layer_order: u32,
     pub volume: Percentage,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub stage: Option<StageTarget>,
+    pub target_type: TargetType,
+}
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(flatten)]
-    pub sprite: Option<SpriteTarget>,
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum TargetType {
+    Stage(StageTarget),
+    Sprite(SpriteTarget),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,26 +36,18 @@ pub struct Target {
 pub struct StageTarget {
     pub tempo: u32,
     pub video_state: VideoState,
-    #[serde(default = "defaults::video_transparency")]
     pub video_transparency: Percentage,
-    #[serde(default = "defaults::text_to_speech_language")]
-    pub text_to_speech_language: Language,
+    pub text_to_speech_language: Option<Language>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SpriteTarget {
-    #[serde(default = "defaults::sprite_visibility")]
     pub visible: bool,
-    #[serde(default = "defaults::coord_origin")]
     pub x: Coord,
-    #[serde(default = "defaults::coord_origin")]
     pub y: Coord,
-    #[serde(default = "defaults::sprite_size")]
     pub size: Percentage,
-    #[serde(default = "defaults::sprite_direction")]
     pub direction: Angle,
-    #[serde(default = "defaults::sprite_draggability")]
     pub draggable: bool,
     pub rotation_style: RotationStyle,
 }
@@ -177,13 +170,15 @@ pub struct Asset {
     pub md5ext: String,
     pub data_format: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub costume: Option<CostumeAsset>,
+    pub asset_type: AssetType,
+}
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(flatten)]
-    pub sound: Option<SoundAsset>,
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum AssetType {
+    Costume(CostumeAsset),
+    Sound(SoundAsset),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -246,40 +241,4 @@ pub enum RotationStyle {
     LeftRight,
     #[serde(rename = "don't rotate")]
     DontRotate,
-}
-
-mod defaults {
-    use super::*;
-
-    pub const fn is_stage() -> bool {
-        false
-    }
-
-    pub const fn video_transparency() -> Percentage {
-        50
-    }
-
-    pub const fn text_to_speech_language() -> Language {
-        Language::English
-    }
-
-    pub const fn sprite_visibility() -> bool {
-        true
-    }
-
-    pub const fn coord_origin() -> Coord {
-        0.0
-    }
-
-    pub const fn sprite_size() -> Percentage {
-        100
-    }
-
-    pub const fn sprite_direction() -> Angle {
-        90
-    }
-
-    pub const fn sprite_draggability() -> bool {
-        false
-    }
 }
