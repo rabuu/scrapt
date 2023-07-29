@@ -1,3 +1,1 @@
-pub use manifest::Manifest;
-
-pub mod manifest;
+pub mod scratch;
