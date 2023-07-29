@@ -28,7 +28,6 @@ pub type CodeCoord = u32;
 pub type Percentage = u16;
 pub type Angle = u16;
 pub type Opcode = String;
-pub type Version = String;
 pub type ArgArray = String;
 
 #[derive(Debug, Serialize, Deserialize)]

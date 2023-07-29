@@ -1,1 +1,1 @@
-pub mod scratch;
+pub mod manifest;

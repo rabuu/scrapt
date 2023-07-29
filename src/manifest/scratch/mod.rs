@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+use super::common::*;
+
 pub mod common;
-pub mod extension;
-pub mod meta;
 pub mod monitor;
 pub mod target;
 
@@ -11,6 +11,6 @@ pub mod target;
 pub struct Manifest {
     pub targets: Vec<target::Target>,
     pub monitors: Vec<monitor::Monitor>,
-    pub extensions: Vec<extension::Extension>,
-    pub meta: meta::Metadata,
+    pub extensions: Vec<Extension>,
+    pub meta: Metadata,
 }
