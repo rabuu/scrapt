@@ -7,6 +7,7 @@ pub struct Manifest {
     project: Project,
     #[serde(default)]
     assets: Assets,
+    #[serde(default)]
     meta: Metadata,
 }
 
