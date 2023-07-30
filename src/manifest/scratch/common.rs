@@ -23,8 +23,8 @@ pub enum Argument {
 
 pub type Id = String;
 pub type Name = String;
-pub type Coord = f64;
-pub type CodeCoord = u32;
+pub type Coord = Number;
+pub type CodeCoord = Number;
 pub type Percentage = u16;
 pub type Angle = u16;
 pub type Opcode = String;
