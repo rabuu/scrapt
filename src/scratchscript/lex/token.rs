@@ -1,9 +1,13 @@
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    Illegal,
+    Illegal(String),
     Eof,
 
+    Comment(String),
+    MetaComment(String),
+
     Ident(String),
+    RawIdent(String),
     Int(isize),
     Float(f64),
     Str(String),
@@ -11,6 +15,8 @@ pub enum Token {
     Plus,
     Minus,
     Equal,
+    Comma,
+    Slash,
     Asterisk,
     Colon,
     DoubleColon,
@@ -24,6 +30,7 @@ pub enum Token {
     ChevronL,
     ChevronR,
 
+    // keywords
     Set,
     Vars,
     Lists,
