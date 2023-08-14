@@ -1,0 +1,39 @@
+set {
+    tempo = 60;
+    volume = 90;
+    videoTransparency = 60;
+    videoState = "on-flipped";
+}
+
+vars {
+    foobar = 42;
+    baz;
+}
+
+
+lists {
+     list1 = [
+        "hallo",
+        123,
+    ];
+    list2 = [0.3];
+    list3;
+}
+
+broadcasts {
+    broadcast1;
+}
+
+costumes {
+	backdrop1: SVG;
+	*backdrop2: PNG = "cool-picture.pic";
+}
+
+sounds {
+	sound1: WAV;
+	sound2: MP4 = "cool-sound.snd"
+}
+
+-> events::Flag {
+    sound::play(sound1);
+}

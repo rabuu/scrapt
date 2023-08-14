@@ -1,0 +1,28 @@
+vars {
+    fun = 99;
+}
+
+def dance: (times) "and sing" (lyrics) if <cond> {
+    if cond {
+        looks::say(lyrics);
+    }
+
+    motion::setRotationStyle("left-right");
+
+    repeat times {
+        motion::pointInDirection(90);
+        waitSecs(0.2);
+        motion::pointInDirection(-90);
+        waitSecs(0.3);
+    }
+
+    motion::pointInDirection(90);
+
+    if cond {
+        looks::say("");
+    }
+}
+
+-> events::Flag {
+    custom::dance(10, "Heyho", fun > 50);
+}
