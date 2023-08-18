@@ -22,14 +22,14 @@ impl Default for Metadata {
     }
 }
 
-fn default_semver() -> Version {
+pub fn default_semver() -> Version {
     Version::from("3.0.0")
 }
 
-fn default_vm() -> Version {
+pub fn default_vm() -> Version {
     Version::from("1.5.91")
 }
 
-fn default_agent() -> String {
+pub fn default_agent() -> String {
     String::from("Mozilla/5 (X11; U; Linux x86_64; en-US) Gecko/2010 Firefox/115")
 }

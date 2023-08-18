@@ -1,4 +1,4 @@
-pub mod extension;
+mod extension;
 pub mod meta;
 
 pub type Version = String;
