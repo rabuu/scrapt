@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use manifest_common::*;
+pub use manifest_common::{Extension, Metadata};
 
 mod common;
 mod monitor;
@@ -29,14 +29,16 @@ pub mod builder {
     use super::*;
 
     pub struct ManifestBuilder {
-        pub targets: Vec<target::Target>,
-        pub monitors: Vec<monitor::Monitor>,
-        pub extensions: Vec<Extension>,
-        pub meta: Option<Metadata>,
+        targets: Vec<target::Target>,
+        monitors: Vec<monitor::Monitor>,
+        extensions: Vec<Extension>,
+        meta: Option<Metadata>,
     }
 
     impl ManifestBuilder {
         pub fn new(stage: target::Target) -> ManifestBuilder {
+            debug_assert!(stage.is_stage);
+
             ManifestBuilder {
                 targets: vec![stage],
                 monitors: Vec::new(),
@@ -46,6 +48,8 @@ pub mod builder {
         }
 
         pub fn add_sprite(mut self, sprite: target::Target) -> ManifestBuilder {
+            debug_assert!(!sprite.is_stage);
+
             self.targets.push(sprite);
             self
         }
