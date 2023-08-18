@@ -4,6 +4,9 @@ extensions = [
     "pen",
 ]
 
+[sprites]
+cat = "My little Cat"
+
 [assets]
 directory = "assets"
 auto_renaming = true

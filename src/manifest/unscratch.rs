@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use super::common::*;
@@ -5,6 +7,8 @@ use super::common::*;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {
     project: Project,
+    #[serde(default)]
+    sprites: HashMap<String, String>,
     #[serde(default)]
     assets: Assets,
     #[serde(default)]
