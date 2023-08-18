@@ -11,10 +11,10 @@ pub fn lex(source: &str) -> Vec<Token> {
 
     loop {
         let token = cursor.advance_token();
-        let eof = token == Token::Eof;
+        let is_eof = token == Token::Eof;
         tokens.push(token);
 
-        if eof {
+        if is_eof {
             break;
         }
     }
@@ -22,35 +22,11 @@ pub fn lex(source: &str) -> Vec<Token> {
     tokens
 }
 
-pub fn is_whitespace(c: char) -> bool {
-    matches!(
-        c,
-        // Usual ASCII suspects
-        '\u{0009}'   // \t
-        | '\u{000A}' // \n
-        | '\u{000B}' // vertical tab
-        | '\u{000C}' // form feed
-        | '\u{000D}' // \r
-        | '\u{0020}' // space
-
-        // NEXT LINE from latin1
-        | '\u{0085}'
-
-        // Bidi markers
-        | '\u{200E}' // LEFT-TO-RIGHT MARK
-        | '\u{200F}' // RIGHT-TO-LEFT MARK
-
-        // Dedicated whitespace characters from Unicode
-        | '\u{2028}' // LINE SEPARATOR
-        | '\u{2029}' // PARAGRAPH SEPARATOR
-    )
-}
-
 impl Cursor<'_> {
     pub fn advance_token(&mut self) -> Token {
         use Token::*;
 
-        self.eat(is_whitespace);
+        self.eat(|c| c.is_whitespace());
 
         let first_char = match self.bump() {
             Some(c) => c,
@@ -64,11 +40,11 @@ impl Cursor<'_> {
                     '/' => {
                         self.bump();
                         self.bump();
-                        MetaComment(self.eat(|c| c != '\n'))
+                        MetaComment(self.eat(|c| c != '\n').trim().to_string())
                     }
                     _ => {
                         self.bump();
-                        Comment(self.eat(|c| c != '\n'))
+                        Comment(self.eat(|c| c != '\n').trim().to_string())
                     }
                 },
                 _ => Slash,
@@ -76,7 +52,6 @@ impl Cursor<'_> {
 
             // one symbol tokens
             '+' => Plus,
-            '-' => Minus,
             '=' => Equal,
             ',' => Comma,
             '*' => Asterisk,
@@ -85,6 +60,8 @@ impl Cursor<'_> {
             ')' => ParenR,
             '{' => CurlyL,
             '}' => CurlyR,
+            '[' => BracketL,
+            ']' => BracketR,
             '<' => ChevronL,
             '>' => ChevronR,
 
@@ -97,16 +74,64 @@ impl Cursor<'_> {
                 _ => Colon,
             },
 
-            // negatives or arrow
+            // minus or arrow
             '-' => match self.first() {
                 '>' => {
                     self.bump();
                     Arrow
                 }
-                _ => todo!(),
+                _ => Minus,
             },
 
-            _ => Illegal(first_char.to_string()),
+            // strings
+            '"' => {
+                let string = self.eat(|c| c != '"');
+                let _closing_del = self.bump();
+                Str(string)
+            }
+
+            // raw idents
+            'r' if self.first() == '#' && self.second().is_ascii_alphabetic() => {
+                self.bump();
+                Ident(self.eat(|c| c.is_ascii_alphanumeric()))
+            }
+
+            // numerics
+            c @ _ if c.is_ascii_digit() => {
+                let inp = self.eat_with_prev(|c| c.is_ascii_digit() || c == '.');
+
+                if let Ok(int) = inp.parse::<usize>() {
+                    Int(int)
+                } else if let Ok(float) = inp.parse::<f64>() {
+                    Float(float)
+                } else {
+                    Illegal(inp, "Non-number starting with numerical character")
+                }
+            }
+
+            // keywords and idents
+            c @ _ if c.is_ascii_alphabetic() => {
+                use self::token::Keyword::*;
+
+                let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());
+
+                match inp.as_str() {
+                    "set" => return Keyword(Set),
+                    "vars" => return Keyword(Vars),
+                    "lists" => return Keyword(Lists),
+                    "broadcasts" => return Keyword(Broadcasts),
+                    "costumes" => return Keyword(Costumes),
+                    "sounds" => return Keyword(Sounds),
+                    "repeat" => return Keyword(Repeat),
+                    "if" => return Keyword(If),
+                    "else" => return Keyword(Else),
+                    _ => (),
+                }
+
+                Ident(inp)
+            }
+
+            c => Illegal(c.to_string(), "Illegal character"),
         }
     }
 }

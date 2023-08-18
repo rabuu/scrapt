@@ -1,6 +1,6 @@
-use std::fs;
+// use std::fs;
 
-use unscratch::manifest;
+// use unscratch::manifest;
 
 fn main() {
     // let mut args = std::env::args().skip(1);
@@ -12,14 +12,13 @@ fn main() {
 
     // println!("{:#?}", manifest);
 
-    let tokens = unscratch::scratchscript::lex::lex(
-        "
-/
-// Hallo
-/// Halllo
-/ / //Hey
-",
+    let example_file_path: String = format!(
+        "{}/examples/untitled-project/stage.uscr",
+        env!("CARGO_MANIFEST_DIR")
     );
+
+    let file = std::fs::read_to_string(example_file_path).unwrap();
+    let tokens = unscratch::scratchscript::lex::lex(&file);
 
     println!("{:#?}", tokens);
 }

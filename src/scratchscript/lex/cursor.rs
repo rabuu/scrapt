@@ -13,6 +13,7 @@ const EOF: char = '\0';
 #[derive(Debug)]
 pub struct Cursor<'a> {
     chars: Chars<'a>,
+    prev: char,
 }
 
 impl<'a> Cursor<'a> {
@@ -48,7 +49,9 @@ impl<'a> Cursor<'a> {
 
     /// Advance to the next char
     pub fn bump(&mut self) -> Option<char> {
-        self.chars.next()
+        let c = self.chars.next()?;
+        self.prev = c;
+        Some(c)
     }
 
     /// Consumes chars while predicate returns true or EOF is reached
@@ -57,6 +60,14 @@ impl<'a> Cursor<'a> {
         while predicate(self.first()) && !self.is_eof() {
             eaten.push(self.bump().unwrap())
         }
+        eaten
+    }
+
+    /// Works like `eat()` but includes the previously comsumed character as well
+    pub fn eat_with_prev(&mut self, predicate: impl FnMut(char) -> bool) -> String {
+        let prev = self.prev;
+        let mut eaten = self.eat(predicate);
+        eaten.insert(0, prev);
         eaten
     }
 }

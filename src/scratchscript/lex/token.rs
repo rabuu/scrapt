@@ -1,14 +1,14 @@
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    Illegal(String),
     Eof,
+    Illegal(String, &'static str),
 
     Comment(String),
     MetaComment(String),
 
+    Keyword(Keyword),
     Ident(String),
-    RawIdent(String),
-    Int(isize),
+    Int(usize),
     Float(f64),
     Str(String),
 
@@ -27,14 +27,23 @@ pub enum Token {
     ParenR,
     CurlyL,
     CurlyR,
+    BracketL,
+    BracketR,
     ChevronL,
     ChevronR,
+}
 
-    // keywords
+#[derive(Debug, PartialEq)]
+pub enum Keyword {
     Set,
     Vars,
     Lists,
     Broadcasts,
     Costumes,
     Sounds,
+
+    // control flow
+    Repeat,
+    If,
+    Else,
 }
