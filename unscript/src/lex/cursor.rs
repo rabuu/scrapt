@@ -1,7 +1,8 @@
-/// Cursor module
-///
-/// This module is stolen from Rusts lexer:
-/// https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/cursor.rs.html
+//! Cursor module
+//!
+//! This module is stolen from Rusts lexer:
+//! https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/cursor.rs.html
+
 use std::str::Chars;
 
 const EOF: char = '\0';
