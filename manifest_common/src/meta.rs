@@ -45,9 +45,9 @@ pub mod builder {
     use crate::Version;
 
     pub struct MetadataBuilder {
-        pub semver: Option<Version>,
-        pub vm: Option<Version>,
-        pub agent: Option<String>,
+        semver: Option<Version>,
+        vm: Option<Version>,
+        agent: Option<String>,
     }
 
     impl MetadataBuilder {
