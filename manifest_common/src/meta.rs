@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::common::*;
+use super::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {

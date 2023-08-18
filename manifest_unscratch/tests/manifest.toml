@@ -1,0 +1,17 @@
+[project]
+name = "UnscratchExample"
+extensions = [
+    "pen",
+]
+
+[sprites]
+cat = "My little Cat"
+
+[assets]
+directory = "assets"
+auto_renaming = true
+
+[meta]
+semver = "3.0.0"
+vm = "1.5.90"
+agent = "Mozilla/5 (X11; U; Linux x86_64; en-US) Gecko/2010 Firefox/115"

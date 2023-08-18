@@ -1,11 +1,11 @@
 pub use cursor::Cursor;
 
-use self::token::Token;
+pub use self::token::{Keyword, Token};
 
 mod cursor;
-pub mod token;
+mod token;
 
-pub fn lex(source: &str) -> Vec<Token> {
+pub fn tokenize(source: &str) -> Vec<Token> {
     let mut cursor = Cursor::new(source);
     let mut tokens = Vec::new();
 

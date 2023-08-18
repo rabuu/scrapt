@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::common::*;
+use manifest_common::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {
@@ -15,15 +15,21 @@ pub struct Manifest {
     meta: Metadata,
 }
 
+impl Manifest {
+    pub fn parse(input: &str) -> Option<Manifest> {
+        toml::from_str(input).ok()?
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Project {
+struct Project {
     name: String,
     #[serde(default)]
     extensions: Vec<Extension>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Assets {
+struct Assets {
     #[serde(default = "default_assets_dir")]
     directory: String,
     #[serde(default = "default_auto_renaming")]
