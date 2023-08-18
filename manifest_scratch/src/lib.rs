@@ -16,7 +16,62 @@ pub struct Manifest {
 }
 
 impl Manifest {
+    pub fn builder(stage: target::Target) -> builder::ManifestBuilder {
+        builder::ManifestBuilder::new(stage)
+    }
+
     pub fn parse(input: &str) -> Option<Manifest> {
         serde_json::from_str(input).ok()?
+    }
+}
+
+pub mod builder {
+    use super::*;
+
+    pub struct ManifestBuilder {
+        pub targets: Vec<target::Target>,
+        pub monitors: Vec<monitor::Monitor>,
+        pub extensions: Vec<Extension>,
+        pub meta: Option<Metadata>,
+    }
+
+    impl ManifestBuilder {
+        pub fn new(stage: target::Target) -> ManifestBuilder {
+            ManifestBuilder {
+                targets: vec![stage],
+                monitors: Vec::new(),
+                extensions: Vec::new(),
+                meta: None,
+            }
+        }
+
+        pub fn add_sprite(mut self, sprite: target::Target) -> ManifestBuilder {
+            self.targets.push(sprite);
+            self
+        }
+
+        pub fn add_monitor(mut self, monitor: monitor::Monitor) -> ManifestBuilder {
+            self.monitors.push(monitor);
+            self
+        }
+
+        pub fn add_extension(mut self, extension: Extension) -> ManifestBuilder {
+            self.extensions.push(extension);
+            self
+        }
+
+        pub fn meta(mut self, meta: Metadata) -> ManifestBuilder {
+            self.meta = Some(meta);
+            self
+        }
+
+        pub fn build(self) -> Manifest {
+            Manifest {
+                targets: self.targets,
+                monitors: self.monitors,
+                extensions: self.extensions,
+                meta: self.meta.unwrap_or_default(),
+            }
+        }
     }
 }
