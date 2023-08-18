@@ -12,6 +12,12 @@ pub struct Metadata {
     pub agent: String,
 }
 
+impl Metadata {
+    pub fn builder() -> builder::MetadataBuilder {
+        builder::MetadataBuilder::new()
+    }
+}
+
 impl Default for Metadata {
     fn default() -> Self {
         Self {
@@ -22,14 +28,58 @@ impl Default for Metadata {
     }
 }
 
-pub fn default_semver() -> Version {
+fn default_semver() -> Version {
     Version::from("3.0.0")
 }
 
-pub fn default_vm() -> Version {
+fn default_vm() -> Version {
     Version::from("1.5.91")
 }
 
-pub fn default_agent() -> String {
+fn default_agent() -> String {
     String::from("Mozilla/5 (X11; U; Linux x86_64; en-US) Gecko/2010 Firefox/115")
+}
+
+pub mod builder {
+    use super::*;
+    use crate::Version;
+
+    pub struct MetadataBuilder {
+        pub semver: Option<Version>,
+        pub vm: Option<Version>,
+        pub agent: Option<String>,
+    }
+
+    impl MetadataBuilder {
+        pub fn new() -> MetadataBuilder {
+            MetadataBuilder {
+                semver: None,
+                vm: None,
+                agent: None,
+            }
+        }
+
+        pub fn semver(mut self, semver: Version) -> MetadataBuilder {
+            self.semver = Some(semver);
+            self
+        }
+
+        pub fn vm(mut self, vm: Version) -> MetadataBuilder {
+            self.vm = Some(vm);
+            self
+        }
+
+        pub fn agent(mut self, agent: String) -> MetadataBuilder {
+            self.agent = Some(agent);
+            self
+        }
+
+        pub fn build(self) -> Metadata {
+            Metadata {
+                semver: self.semver.unwrap_or(default_semver()),
+                vm: self.vm.unwrap_or(default_vm()),
+                agent: self.agent.unwrap_or(default_agent()),
+            }
+        }
+    }
 }
