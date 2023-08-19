@@ -11,6 +11,12 @@ pub enum Block {
     Short(ShortBlock),
 }
 
+impl Block {
+    pub fn builder() -> builder::BlockBuilder {
+        builder::BlockBuilder
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FullBlock {
@@ -98,4 +104,36 @@ pub struct ControlStopMutation {
 pub struct PrototypeMutation {
     pub argumentnames: ArgArray,
     pub argumentdefaults: ArgArray,
+}
+
+pub mod builder {
+    use super::*;
+
+    pub struct BlockBuilder;
+
+    impl BlockBuilder {
+        pub fn full(self) -> FullBlockBuilder {
+            FullBlockBuilder::new()
+        }
+
+        pub fn short(self) -> ShortBlockBuilder {
+            ShortBlockBuilder
+        }
+    }
+
+    pub struct FullBlockBuilder;
+
+    impl FullBlockBuilder {
+        pub fn new() -> FullBlockBuilder {
+            FullBlockBuilder
+        }
+    }
+
+    pub struct ShortBlockBuilder;
+
+    impl ShortBlockBuilder {
+        pub fn number(self, num: Number) -> ShortBlock {
+            ShortBlock::Simple(4, Value::Num(num))
+        }
+    }
 }
