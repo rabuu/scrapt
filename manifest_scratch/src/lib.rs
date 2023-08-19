@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub use manifest_common::{Extension, Metadata};
 
+mod block;
 mod common;
 mod monitor;
 mod target;

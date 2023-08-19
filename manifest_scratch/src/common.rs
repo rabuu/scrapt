@@ -1,4 +1,4 @@
-use super::*;
+use crate::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -34,7 +34,7 @@ pub type ArgArray = String;
 #[serde(untagged)]
 pub enum IdOrAnonymous {
     Id(String),
-    Anonymous(target::ShortBlock),
+    Anonymous(block::ShortBlock),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
