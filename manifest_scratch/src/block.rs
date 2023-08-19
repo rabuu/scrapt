@@ -34,7 +34,7 @@ pub struct FullBlock {
     pub pos: Option<CodePos>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub comment: Option<String>,
+    pub comment: Option<Id>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mutation: Option<Mutation>,
 }
@@ -57,8 +57,14 @@ impl PrimitiveBlock {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Input {
-    Simple(u8, IdOrAnonymous),
-    Obscured(u8, IdOrAnonymous, IdOrAnonymous),
+    Simple(u8, IdOrPrimitive),
+    Obscuring(u8, IdOrPrimitive, IdOrPrimitive),
+}
+
+impl Input {
+    pub fn builder() -> builder::InputBuilder {
+        builder::InputBuilder
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -118,8 +124,8 @@ pub mod builder {
     pub struct BlockBuilder;
 
     impl BlockBuilder {
-        pub fn full(self) -> FullBlockBuilder {
-            FullBlockBuilder::new()
+        pub fn full(self, opcode: Opcode) -> FullBlockBuilder {
+            FullBlockBuilder::new(opcode)
         }
 
         pub fn primitive(self) -> PrimitiveBlockBuilder {
@@ -127,11 +133,89 @@ pub mod builder {
         }
     }
 
-    pub struct FullBlockBuilder;
+    pub struct FullBlockBuilder {
+        opcode: Opcode,
+        next: Option<Id>,
+        parent: Option<Id>,
+        inputs: HashMap<Name, Input>,
+        fields: HashMap<Name, Field>,
+        shadow: bool,
+        top_level: bool,
+        pos: Option<CodePos>,
+        comment: Option<String>,
+        mutation: Option<Mutation>,
+    }
 
     impl FullBlockBuilder {
-        pub fn new() -> FullBlockBuilder {
-            FullBlockBuilder
+        pub fn new(opcode: Opcode) -> FullBlockBuilder {
+            FullBlockBuilder {
+                opcode,
+                next: None,
+                parent: None,
+                inputs: HashMap::new(),
+                fields: HashMap::new(),
+                shadow: false,
+                top_level: false,
+                pos: None,
+                comment: None,
+                mutation: None,
+            }
+        }
+
+        pub fn next(mut self, id: Id) -> FullBlockBuilder {
+            self.next = Some(id);
+            self
+        }
+
+        pub fn parent(mut self, id: Id) -> FullBlockBuilder {
+            self.parent = Some(id);
+            self
+        }
+
+        pub fn add_input(mut self, name: Name, input: Input) -> FullBlockBuilder {
+            self.inputs.insert(name, input);
+            self
+        }
+
+        pub fn add_field(mut self, name: Name, field: Field) -> FullBlockBuilder {
+            self.fields.insert(name, field);
+            self
+        }
+
+        pub fn shadow(mut self) -> FullBlockBuilder {
+            self.shadow = true;
+            self
+        }
+
+        pub fn top_level_pos(mut self, pos: CodePos) -> FullBlockBuilder {
+            self.top_level = true;
+            self.pos = Some(pos);
+            self
+        }
+
+        pub fn comment(mut self, id: Id) -> FullBlockBuilder {
+            self.comment = Some(id);
+            self
+        }
+
+        pub fn mutation(mut self, mutation: Mutation) -> FullBlockBuilder {
+            self.mutation = Some(mutation);
+            self
+        }
+
+        pub fn build(self) -> FullBlock {
+            FullBlock {
+                opcode: self.opcode,
+                next: self.next,
+                parent: self.parent,
+                inputs: self.inputs,
+                fields: self.fields,
+                shadow: self.shadow,
+                top_level: self.top_level,
+                pos: self.pos,
+                comment: self.comment,
+                mutation: self.mutation,
+            }
         }
     }
 
@@ -183,6 +267,68 @@ pub mod builder {
             } else {
                 PrimitiveBlock::Advanced(13, name, id)
             }
+        }
+    }
+
+    pub struct InputBuilder;
+
+    impl InputBuilder {
+        pub fn shadow(self) -> ShadowInputBuilder {
+            ShadowInputBuilder
+        }
+
+        pub fn obscuring(self) -> BeginningObscuringInputBuilder {
+            BeginningObscuringInputBuilder
+        }
+
+        pub fn id(self, id: Id) -> Input {
+            Input::Simple(2, IdOrPrimitive::Id(id))
+        }
+
+        pub fn primitive(self, block: PrimitiveBlock) -> Input {
+            Input::Simple(2, IdOrPrimitive::Primitive(block))
+        }
+    }
+
+    pub struct ShadowInputBuilder;
+
+    impl ShadowInputBuilder {
+        pub fn id(self, id: Id) -> Input {
+            Input::Simple(1, IdOrPrimitive::Id(id))
+        }
+
+        pub fn primitive(self, block: PrimitiveBlock) -> Input {
+            Input::Simple(1, IdOrPrimitive::Primitive(block))
+        }
+    }
+
+    pub struct BeginningObscuringInputBuilder;
+
+    impl BeginningObscuringInputBuilder {
+        pub fn id(self, id: Id) -> FinishingObscuringInputBuilder {
+            FinishingObscuringInputBuilder::new(IdOrPrimitive::Id(id))
+        }
+
+        pub fn primitive(self, block: PrimitiveBlock) -> FinishingObscuringInputBuilder {
+            FinishingObscuringInputBuilder::new(IdOrPrimitive::Primitive(block))
+        }
+    }
+
+    pub struct FinishingObscuringInputBuilder {
+        input: IdOrPrimitive,
+    }
+
+    impl FinishingObscuringInputBuilder {
+        pub fn new(input: IdOrPrimitive) -> FinishingObscuringInputBuilder {
+            FinishingObscuringInputBuilder { input }
+        }
+
+        pub fn shadow_id(self, id: Id) -> Input {
+            Input::Obscuring(3, self.input, IdOrPrimitive::Id(id))
+        }
+
+        pub fn shadow_primitve(self, block: PrimitiveBlock) -> Input {
+            Input::Obscuring(3, self.input, IdOrPrimitive::Primitive(block))
         }
     }
 }

@@ -34,9 +34,9 @@ pub type ArgArray = String;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum IdOrAnonymous {
+pub enum IdOrPrimitive {
     Id(Id),
-    Anonymous(block::PrimitiveBlock),
+    Primitive(block::PrimitiveBlock),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
