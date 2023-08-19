@@ -8,7 +8,7 @@ use crate::common::*;
 #[serde(untagged)]
 pub enum Block {
     Full(FullBlock),
-    Short(ShortBlock),
+    Primitive(PrimitiveBlock),
 }
 
 impl Block {
@@ -41,7 +41,7 @@ pub struct FullBlock {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum ShortBlock {
+pub enum PrimitiveBlock {
     // TODO: investigate different numeral modes
     Simple(u8, Value),
     Advanced(u8, Name, Id),
@@ -116,8 +116,8 @@ pub mod builder {
             FullBlockBuilder::new()
         }
 
-        pub fn short(self) -> ShortBlockBuilder {
-            ShortBlockBuilder
+        pub fn primitive(self) -> PrimitiveBlockBuilder {
+            PrimitiveBlockBuilder
         }
     }
 
@@ -129,11 +129,11 @@ pub mod builder {
         }
     }
 
-    pub struct ShortBlockBuilder;
+    pub struct PrimitiveBlockBuilder;
 
-    impl ShortBlockBuilder {
-        pub fn number(self, num: Number) -> ShortBlock {
-            ShortBlock::Simple(4, Value::Num(num))
+    impl PrimitiveBlockBuilder {
+        pub fn number(self, num: Number) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(4, Value::Num(num))
         }
     }
 }
