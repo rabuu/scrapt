@@ -28,6 +28,7 @@ pub type Coord = Number;
 pub type CodeCoord = Number;
 pub type Percentage = u16;
 pub type Angle = u16;
+pub type Color = String;
 pub type Opcode = String;
 pub type ArgArray = String;
 
@@ -42,4 +43,10 @@ pub enum IdOrAnonymous {
 pub struct CodePos {
     pub x: CodeCoord,
     pub y: CodeCoord,
+}
+
+impl CodePos {
+    pub fn new(x: CodeCoord, y: CodeCoord) -> CodePos {
+        CodePos { x, y }
+    }
 }

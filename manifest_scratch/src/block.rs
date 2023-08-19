@@ -48,6 +48,12 @@ pub enum PrimitiveBlock {
     AdvancedWithPos(u8, Name, Id, CodeCoord, CodeCoord),
 }
 
+impl PrimitiveBlock {
+    pub fn builder() -> builder::PrimitiveBlockBuilder {
+        builder::PrimitiveBlockBuilder
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Input {
@@ -134,6 +140,49 @@ pub mod builder {
     impl PrimitiveBlockBuilder {
         pub fn number(self, num: Number) -> PrimitiveBlock {
             PrimitiveBlock::Simple(4, Value::Num(num))
+        }
+
+        // TODO
+        // pub fn positive_number(self, num: PositiveNumber)
+
+        pub fn positive_integer(self, num: u32) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(6, Value::Num(Number::Int(num as i64)))
+        }
+
+        pub fn integer(self, num: i64) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(7, Value::Num(Number::Int(num)))
+        }
+
+        pub fn angle(self, angle: Angle) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(8, Value::Num(Number::Int(angle as i64)))
+        }
+
+        pub fn color(self, color: Color) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(9, Value::Str(color))
+        }
+
+        pub fn string(self, string: String) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(10, Value::Str(string))
+        }
+
+        pub fn broadcast(self, name: Name, id: Id) -> PrimitiveBlock {
+            PrimitiveBlock::Advanced(11, name, id)
+        }
+
+        pub fn variable(self, name: Name, id: Id, pos: Option<CodePos>) -> PrimitiveBlock {
+            if let Some(pos) = pos {
+                PrimitiveBlock::AdvancedWithPos(12, name, id, pos.x, pos.y)
+            } else {
+                PrimitiveBlock::Advanced(12, name, id)
+            }
+        }
+
+        pub fn list(self, name: Name, id: Id, pos: Option<CodePos>) -> PrimitiveBlock {
+            if let Some(pos) = pos {
+                PrimitiveBlock::AdvancedWithPos(13, name, id, pos.x, pos.y)
+            } else {
+                PrimitiveBlock::Advanced(13, name, id)
+            }
         }
     }
 }
