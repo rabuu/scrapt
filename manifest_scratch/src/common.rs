@@ -1,3 +1,5 @@
+pub use manifest_common::Id;
+
 use crate::*;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,7 +23,6 @@ pub enum Argument {
     Bool(bool),
 }
 
-pub type Id = String;
 pub type Name = String;
 pub type Coord = Number;
 pub type CodeCoord = Number;
@@ -33,7 +34,7 @@ pub type ArgArray = String;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IdOrAnonymous {
-    Id(String),
+    Id(Id),
     Anonymous(block::PrimitiveBlock),
 }
 
