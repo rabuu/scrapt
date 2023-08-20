@@ -24,7 +24,7 @@ pub struct FullBlock {
     pub next: Option<Id>,
     pub parent: Option<Id>,
     pub inputs: HashMap<Name, Input>,
-    pub fields: HashMap<Name, Field>,
+    pub fields: HashMap<Name, (Value, Option<Id>)>,
     pub shadow: bool,
     pub top_level: bool,
 
@@ -65,14 +65,6 @@ impl Input {
     pub fn builder() -> builder::InputBuilder {
         builder::InputBuilder
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Field {
-    Simple(Value),
-    MaybeWithId(Value, Option<Id>),
-    WithId(Value, Id),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -138,7 +130,7 @@ pub mod builder {
         next: Option<Id>,
         parent: Option<Id>,
         inputs: HashMap<Name, Input>,
-        fields: HashMap<Name, Field>,
+        fields: HashMap<Name, (Value, Option<Id>)>,
         shadow: bool,
         top_level: bool,
         pos: Option<CodePos>,
@@ -177,8 +169,8 @@ pub mod builder {
             self
         }
 
-        pub fn add_field(mut self, name: Name, field: Field) -> FullBlockBuilder {
-            self.fields.insert(name, field);
+        pub fn add_field(mut self, name: Name, value: Value, id: Option<Id>) -> FullBlockBuilder {
+            self.fields.insert(name, (value, id));
             self
         }
 
