@@ -78,7 +78,7 @@ pub struct Comment {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
-    pub asset_id: Id,
+    pub asset_id: AssetId,
     pub name: Name,
     pub md5ext: String,
     pub data_format: String,

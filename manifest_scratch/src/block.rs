@@ -110,6 +110,45 @@ pub struct PrototypeMutation {
     pub argumentdefaults: ArgArray,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct ArgArray(String);
+
+impl ArgArray {
+    pub fn new() -> ArgArray {
+        ArgArray(String::new())
+    }
+
+    pub fn with_capacity(cap: usize) -> ArgArray {
+        ArgArray(String::with_capacity(cap))
+    }
+
+    pub fn from_slice(ids: &[Id]) -> ArgArray {
+        // TODO: capacity
+        // let mut argarr = ArgArray::with_capacity(??);
+
+        let mut argarr = ArgArray::new();
+        argarr.push_slice(ids);
+        argarr
+    }
+
+    pub fn builder() -> builder::ArgArrayBuilder {
+        builder::ArgArrayBuilder::new()
+    }
+
+    pub fn push(&mut self, id: &Id) {
+        self.0.push_str(r#"[\""#);
+        self.0.push_str(&(id.to_string()));
+        self.0.push_str(r#"\"]"#);
+    }
+
+    pub fn push_slice(&mut self, ids: &[Id]) {
+        for id in ids {
+            self.push(id)
+        }
+    }
+}
+
 pub mod builder {
     use super::*;
 
@@ -134,7 +173,7 @@ pub mod builder {
         shadow: bool,
         top_level: bool,
         pos: Option<CodePos>,
-        comment: Option<String>,
+        comment: Option<Id>,
         mutation: Option<Mutation>,
     }
 
@@ -321,6 +360,23 @@ pub mod builder {
 
         pub fn shadow_primitve(self, block: PrimitiveBlock) -> Input {
             Input::Obscuring(3, self.input, IdOrPrimitive::Primitive(block))
+        }
+    }
+
+    pub struct ArgArrayBuilder(ArgArray);
+
+    impl ArgArrayBuilder {
+        pub fn new() -> ArgArrayBuilder {
+            ArgArrayBuilder(ArgArray::new())
+        }
+
+        pub fn add_id(mut self, id: &Id) -> ArgArrayBuilder {
+            self.0.push(id);
+            self
+        }
+
+        pub fn build(self) -> ArgArray {
+            self.0
         }
     }
 }
