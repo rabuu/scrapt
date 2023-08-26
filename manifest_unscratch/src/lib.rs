@@ -16,8 +16,15 @@ pub struct Manifest {
 }
 
 impl Manifest {
-    pub fn parse(input: &str) -> Option<Manifest> {
-        toml::from_str(input).ok()?
+    pub fn parse(input: &str) -> Result<Manifest, String> {
+        match toml::from_str(input) {
+            Ok(m) => Ok(m),
+            Err(err) => Err(format!("{}", err)),
+        }
+    }
+
+    pub fn to_toml(&self) -> String {
+        toml::to_string(self).unwrap()
     }
 }
 

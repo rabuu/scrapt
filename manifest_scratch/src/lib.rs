@@ -21,8 +21,15 @@ impl Manifest {
         builder::ManifestBuilder::new(stage)
     }
 
-    pub fn parse(input: &str) -> Option<Manifest> {
-        serde_json::from_str(input).ok()?
+    pub fn parse(input: &str) -> Result<Manifest, String> {
+        match serde_json::from_str(input) {
+            Ok(m) => Ok(m),
+            Err(err) => Err(format!("{}", err)),
+        }
+    }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
     }
 }
 
