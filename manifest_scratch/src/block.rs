@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
 use serde::{Deserialize, Serialize};
 
@@ -73,9 +73,14 @@ pub struct Mutation {
     pub tag_name: String,
     pub children: [(); 0],
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub mutation_type: Option<MutationType>,
+    pub mutation_type: MutationType,
+}
+
+impl Mutation {
+    pub fn builder() -> builder::MutationBuilder {
+        builder::MutationBuilder
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -89,7 +94,7 @@ pub enum MutationType {
 #[serde(rename_all = "camelCase")]
 pub struct ProcedureMutation {
     pub proccode: String,
-    pub argumentids: ArgArray,
+    pub argumentids: ArgArray<Id>,
     pub warp: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -106,45 +111,45 @@ pub struct ControlStopMutation {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrototypeMutation {
-    pub argumentnames: ArgArray,
-    pub argumentdefaults: ArgArray,
+    pub argumentnames: ArgArray<String>,
+    pub argumentdefaults: ArgArray<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(transparent)]
-pub struct ArgArray(String);
+pub struct ArgArray<T: ToString>(String, #[serde(skip)] PhantomData<T>);
 
-impl ArgArray {
-    pub fn new() -> ArgArray {
-        ArgArray(String::new())
+impl<T: ToString> ArgArray<T> {
+    pub fn new() -> ArgArray<T> {
+        ArgArray(String::new(), PhantomData)
     }
 
-    pub fn with_capacity(cap: usize) -> ArgArray {
-        ArgArray(String::with_capacity(cap))
+    pub fn with_capacity(cap: usize) -> ArgArray<T> {
+        ArgArray(String::with_capacity(cap), PhantomData)
     }
 
-    pub fn from_slice(ids: &[Id]) -> ArgArray {
+    pub fn from_slice(elems: &[T]) -> ArgArray<T> {
         // TODO: capacity
         // let mut argarr = ArgArray::with_capacity(??);
 
         let mut argarr = ArgArray::new();
-        argarr.push_slice(ids);
+        argarr.push_slice(elems);
         argarr
     }
 
-    pub fn builder() -> builder::ArgArrayBuilder {
-        builder::ArgArrayBuilder::new()
-    }
+    pub fn push(&mut self, elem: &T) {
+        if !self.0.is_empty() {
+            self.0.push(',');
+        }
 
-    pub fn push(&mut self, id: &Id) {
         self.0.push_str(r#"[\""#);
-        self.0.push_str(&(id.to_string()));
+        self.0.push_str(&(elem.to_string()));
         self.0.push_str(r#"\"]"#);
     }
 
-    pub fn push_slice(&mut self, ids: &[Id]) {
-        for id in ids {
-            self.push(id)
+    pub fn push_slice(&mut self, elems: &[T]) {
+        for elem in elems {
+            self.push(elem)
         }
     }
 }
@@ -363,20 +368,152 @@ pub mod builder {
         }
     }
 
-    pub struct ArgArrayBuilder(ArgArray);
+    pub struct MutationBuilder;
 
-    impl ArgArrayBuilder {
-        pub fn new() -> ArgArrayBuilder {
-            ArgArrayBuilder(ArgArray::new())
+    impl MutationBuilder {
+        pub fn procedure_call(self, name: &str) -> ProcedureCallMutationBuilder {
+            ProcedureCallMutationBuilder::new(name)
         }
 
-        pub fn add_id(mut self, id: &Id) -> ArgArrayBuilder {
-            self.0.push(id);
+        pub fn procedure_prototype(self, name: &str) -> ProcedurePrototypeMutationBuilder {
+            ProcedurePrototypeMutationBuilder::new(name)
+        }
+
+        /// Construct a `control_stop` mutation
+        ///
+        /// hasnext: Whether the block has a block following it or not
+        ///          (`false` for "stop all" and "stop all in sprite", `true` for "stop other scripts in sprite")
+        pub fn control_stop(self, hasnext: bool) -> Mutation {
+            Mutation {
+                tag_name: String::from("mutation"),
+                children: [],
+                mutation_type: MutationType::ControlStop(ControlStopMutation { hasnext }),
+            }
+        }
+    }
+
+    pub struct ProcedureCallMutationBuilder {
+        proccode: String,
+        argumentids: ArgArray<Id>,
+        warp: bool,
+    }
+
+    impl ProcedureCallMutationBuilder {
+        pub fn new(name: &str) -> ProcedureCallMutationBuilder {
+            ProcedureCallMutationBuilder {
+                proccode: String::from(name),
+                argumentids: ArgArray::new(),
+                warp: false,
+            }
+        }
+
+        pub fn add_label(mut self, label: &str) -> ProcedureCallMutationBuilder {
+            self.proccode.push(' ');
+            self.proccode.push_str(label);
             self
         }
 
-        pub fn build(self) -> ArgArray {
-            self.0
+        pub fn add_strnum_argument(mut self, id: &Id) -> ProcedureCallMutationBuilder {
+            self.proccode.push_str(" %s");
+            self.argumentids.push(id);
+            self
+        }
+
+        pub fn add_bool_argument(mut self, id: &Id) -> ProcedureCallMutationBuilder {
+            self.proccode.push_str(" %b");
+            self.argumentids.push(id);
+            self
+        }
+
+        pub fn warp(mut self, warp: bool) -> ProcedureCallMutationBuilder {
+            self.warp = warp;
+            self
+        }
+
+        pub fn build(self) -> Mutation {
+            Mutation {
+                tag_name: String::from("mutation"),
+                children: [],
+                mutation_type: MutationType::Procedure(ProcedureMutation {
+                    proccode: self.proccode,
+                    argumentids: self.argumentids,
+                    warp: self.warp,
+                    prototype: None,
+                }),
+            }
+        }
+    }
+
+    pub struct ProcedurePrototypeMutationBuilder {
+        proccode: String,
+        argumentids: ArgArray<Id>,
+        warp: bool,
+        argumentnames: ArgArray<String>,
+        argumentdefaults: ArgArray<String>,
+    }
+
+    impl ProcedurePrototypeMutationBuilder {
+        pub fn new(name: &str) -> ProcedurePrototypeMutationBuilder {
+            ProcedurePrototypeMutationBuilder {
+                proccode: String::from(name),
+                argumentids: ArgArray::new(),
+                warp: false,
+                argumentnames: ArgArray::new(),
+                argumentdefaults: ArgArray::new(),
+            }
+        }
+
+        pub fn add_label(mut self, label: &str) -> ProcedurePrototypeMutationBuilder {
+            self.proccode.push(' ');
+            self.proccode.push_str(label);
+            self
+        }
+
+        pub fn add_strnum_argument(
+            mut self,
+            id: &Id,
+            name: String,
+            def: String,
+        ) -> ProcedurePrototypeMutationBuilder {
+            self.proccode.push_str(" %s");
+            self.argumentids.push(id);
+            self.argumentnames.push(&name);
+            self.argumentdefaults.push(&def);
+            self
+        }
+
+        pub fn add_bool_argument(
+            mut self,
+            id: &Id,
+            name: String,
+            def: bool,
+        ) -> ProcedurePrototypeMutationBuilder {
+            self.proccode.push_str(" %b");
+            self.argumentids.push(id);
+            self.argumentnames.push(&name);
+            self.argumentdefaults.push(&format!("{}", def));
+            self
+        }
+
+        pub fn warp(mut self, warp: bool) -> ProcedurePrototypeMutationBuilder {
+            self.warp = warp;
+            self
+        }
+
+        pub fn build(self) -> Mutation {
+            Mutation {
+                tag_name: String::from("mutation"),
+                children: [],
+                mutation_type: MutationType::Procedure(ProcedureMutation {
+                    proccode: self.proccode,
+                    argumentids: self.argumentids,
+                    warp: self.warp,
+                    prototype: Some(PrototypeMutation {
+                        argumentnames: self.argumentnames,
+                        argumentdefaults: self.argumentdefaults,
+                    }),
+                }),
+            }
         }
     }
 }
