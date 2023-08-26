@@ -75,12 +75,12 @@ pub struct Mutation {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub special_mutation: Option<SpecialMutation>,
+    pub mutation_type: Option<MutationType>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum SpecialMutation {
+pub enum MutationType {
     Procedure(ProcedureMutation),
     ControlStop(ControlStopMutation),
 }
