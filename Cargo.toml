@@ -5,14 +5,14 @@ edition = "2021"
 
 [workspace]
 members = [
-    "manifest_common",
-    "manifest_scratch",
-    "manifest_scrapt",
+    "manifest/common",
+    "manifest/scratch",
+    "manifest/scrapt",
 
     "lang",
 ]
 
 [dependencies]
-manifest_scratch = { path = "manifest_scratch" }
-manifest_scrapt = { path = "manifest_scrapt" }
+manifest_scratch = { path = "manifest/scratch" }
+manifest_scrapt = { path = "manifest/scrapt" }
 lang = { path = "lang" }
