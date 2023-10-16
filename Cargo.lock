@@ -31,10 +31,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
 
 [[package]]
+name = "lang"
+version = "0.1.0"
+
+[[package]]
 name = "manifest_common"
 version = "0.1.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "manifest_scrapt"
+version = "0.1.0"
+dependencies = [
+ "manifest_common",
+ "serde",
+ "toml",
 ]
 
 [[package]]
@@ -44,15 +57,6 @@ dependencies = [
  "manifest_common",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "manifest_unscratch"
-version = "0.1.0"
-dependencies = [
- "manifest_common",
- "serde",
- "toml",
 ]
 
 [[package]]
@@ -84,6 +88,15 @@ name = "ryu"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
+
+[[package]]
+name = "scrapt"
+version = "0.1.0"
+dependencies = [
+ "lang",
+ "manifest_scrapt",
+ "manifest_scratch",
+]
 
 [[package]]
 name = "serde"
@@ -175,19 +188,6 @@ name = "unicode-ident"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "301abaae475aa91687eb82514b328ab47a211a533026cb25fc3e519b86adfc3c"
-
-[[package]]
-name = "unscratch"
-version = "0.1.0"
-dependencies = [
- "manifest_scratch",
- "manifest_unscratch",
- "unscript",
-]
-
-[[package]]
-name = "unscript"
-version = "0.1.0"
 
 [[package]]
 name = "winnow"

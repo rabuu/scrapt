@@ -1,5 +1,5 @@
 [package]
-name = "unscratch"
+name = "scrapt"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,12 +7,12 @@ edition = "2021"
 members = [
     "manifest_common",
     "manifest_scratch",
-    "manifest_unscratch",
+    "manifest_scrapt",
 
-    "unscript",
+    "lang",
 ]
 
 [dependencies]
 manifest_scratch = { path = "manifest_scratch" }
-manifest_unscratch = { path = "manifest_unscratch" }
-unscript = { path = "unscript" }
+manifest_scrapt = { path = "manifest_scrapt" }
+lang = { path = "lang" }

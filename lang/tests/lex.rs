@@ -1,4 +1,4 @@
-use unscript::lex::*;
+use lang::lex::*;
 
 #[test]
 fn simple_tokenization() {
