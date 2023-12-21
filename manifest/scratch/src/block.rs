@@ -142,9 +142,9 @@ impl<T: ToString> ArgArray<T> {
             self.0.push(',');
         }
 
-        self.0.push_str(r#"[\""#);
+        self.0.push_str(r#"[""#);
         self.0.push_str(&(elem.to_string()));
-        self.0.push_str(r#"\"]"#);
+        self.0.push_str(r#""]"#);
     }
 
     pub fn push_slice(&mut self, elems: &[T]) {
@@ -515,5 +515,24 @@ pub mod builder {
                 }),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deserialize_argarray() {
+        let argarray: ArgArray<String> = serde_json::from_str(r#""[\"false\"]""#).unwrap();
+    }
+
+    #[test]
+    fn serialize_argarray() {
+        let mut argarray = ArgArray::new();
+        argarray.push(&"hallo".to_string());
+
+        let serialized = serde_json::to_value(argarray).unwrap();
+        assert_eq!(serialized.to_string(), String::from(r#""[\"hallo\"]""#));
     }
 }
