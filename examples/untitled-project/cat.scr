@@ -2,7 +2,7 @@ vars {
     fun = 99;
 }
 
-def dance: (times) "and sing" (lyrics) if <cond> {
+def dance: (times) "and sing" (lyrics) "if" <cond> {
     if cond {
         looks::say(lyrics);
     }

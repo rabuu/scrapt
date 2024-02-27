@@ -32,7 +32,7 @@ costumes {
 
 sounds {
 	sound1: WAV;
-	sound2: MP4 = "cool-sound.snd"
+	sound2: MP4 = "cool-sound.snd";
 }
 
 -> events::Flag {
