@@ -95,7 +95,9 @@ pub enum MutationType {
 pub struct ProcedureMutation {
     pub proccode: String,
     pub argumentids: ArgArray<Id>,
-    pub warp: bool,
+
+    // TODO: maybe de/serialize it to/from bool
+    pub warp: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
@@ -115,7 +117,7 @@ pub struct PrototypeMutation {
     pub argumentdefaults: ArgArray<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct ArgArray<T: ToString>(String, #[serde(skip)] PhantomData<T>);
 
@@ -395,7 +397,7 @@ pub mod builder {
     pub struct ProcedureCallMutationBuilder {
         proccode: String,
         argumentids: ArgArray<Id>,
-        warp: bool,
+        warp: String,
     }
 
     impl ProcedureCallMutationBuilder {
@@ -403,7 +405,7 @@ pub mod builder {
             ProcedureCallMutationBuilder {
                 proccode: String::from(name),
                 argumentids: ArgArray::new(),
-                warp: false,
+                warp: String::from("false"),
             }
         }
 
@@ -425,7 +427,7 @@ pub mod builder {
             self
         }
 
-        pub fn warp(mut self, warp: bool) -> ProcedureCallMutationBuilder {
+        pub fn warp(mut self, warp: String) -> ProcedureCallMutationBuilder {
             self.warp = warp;
             self
         }
@@ -447,7 +449,7 @@ pub mod builder {
     pub struct ProcedurePrototypeMutationBuilder {
         proccode: String,
         argumentids: ArgArray<Id>,
-        warp: bool,
+        warp: String,
         argumentnames: ArgArray<String>,
         argumentdefaults: ArgArray<String>,
     }
@@ -457,7 +459,7 @@ pub mod builder {
             ProcedurePrototypeMutationBuilder {
                 proccode: String::from(name),
                 argumentids: ArgArray::new(),
-                warp: false,
+                warp: String::from("false"),
                 argumentnames: ArgArray::new(),
                 argumentdefaults: ArgArray::new(),
             }
@@ -495,7 +497,7 @@ pub mod builder {
             self
         }
 
-        pub fn warp(mut self, warp: bool) -> ProcedurePrototypeMutationBuilder {
+        pub fn warp(mut self, warp: String) -> ProcedurePrototypeMutationBuilder {
             self.warp = warp;
             self
         }
@@ -525,6 +527,11 @@ mod tests {
     #[test]
     fn deserialize_argarray() {
         let argarray: ArgArray<String> = serde_json::from_str(r#""[\"false\"]""#).unwrap();
+
+        let mut expected = ArgArray::new();
+        expected.push(&"false".to_string());
+
+        assert_eq!(argarray, expected);
     }
 
     #[test]
