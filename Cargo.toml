@@ -12,7 +12,15 @@ members = [
     "lang",
 ]
 
-[dependencies]
+[workspace.dependencies]
+manifest_common = { path = "manifest/common" }
 manifest_scratch = { path = "manifest/scratch" }
 manifest_scrapt = { path = "manifest/scrapt" }
 lang = { path = "lang" }
+
+serde = { version = "1", features = ["derive"] }
+
+[dependencies]
+manifest_scrapt = { workspace = true }
+manifest_scratch = { workspace = true }
+lang = { workspace = true }
