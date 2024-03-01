@@ -42,6 +42,12 @@ pub enum Keyword {
     Costumes,
     Sounds,
 
+    // media types
+    Svg,
+    Png,
+    Wav,
+    Mp4,
+
     // control flow
     Repeat,
     If,

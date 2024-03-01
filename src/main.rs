@@ -22,7 +22,14 @@ fn main() {
     }
 }
 
-fn build(_project_path: PathBuf, manifest_path: PathBuf) {
-    let manifest = ScraptManifest::parse(&fs::read_to_string(manifest_path).unwrap()).unwrap();
-    println!("{:#?}", manifest);
+fn build(project_path: PathBuf, manifest_path: PathBuf) {
+    let _manifest = ScraptManifest::parse(&fs::read_to_string(manifest_path).unwrap()).unwrap();
+
+    let stage = fs::read_to_string(project_path.join("stage.scr")).unwrap();
+
+    let stage_tokens = lang::lex::tokenize(&stage);
+    println!("{:#?}", stage_tokens);
+
+    let target = lang::parse::parse(stage_tokens);
+    println!("{:#?}", target);
 }
