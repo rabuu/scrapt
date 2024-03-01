@@ -1,0 +1,24 @@
+PROG = CONFIG*
+
+CONFIG = GLOBAL_CONFIG | VARS_CONFIG | LISTS_CONFIG | BROADCASTS_CONFIG | COSTUMES_CONFIG | SOUNDS_CONFIG
+
+GLOBAL_CONFIG = "global", "{", GLOBAL_DECL+, "}"
+GLOBAL_DECL = GLOBAL_KEYWORD, "=", value, ";"
+GLOBAL_KEYWORD = "tempo" | "volume" | "videoTransparency" | "videoState"
+
+VARS_CONFIG = "vars", "{", VAR_DECL+, "}"
+VAR_DECL = name, ("=", value)?, ";"
+
+LISTS_CONFIG = "lists", "{", LIST_DECL+, "}"
+LIST_DECL = name, ("=", "[", (value, ",")*, value, ","?, "]")?, ";"
+
+BROADCASTS_CONFIG = "{", BROADCASTS_DECL+, "}"
+BROADCASTS_DECL = name, ";"
+
+COSTUMES_CONFIG = "{", COSTUMES_DECL+, "}"
+COSTUMES_DECL = "*"?, name, (":", COSTUMES_TYPE)?, ";"
+COSTUMES_TYPE = "SVG" | "PNG"
+
+SOUNDS_CONFIG = "{", SOUNDS_DECL+, "}"
+SOUNDS_DECL = "*"?, name, (":", SOUNDS_TYPE)?, ";"
+SOUNDS_TYPE = "WAV" | "MP4"

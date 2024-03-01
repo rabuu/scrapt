@@ -1,4 +1,4 @@
-set {
+global {
     tempo = 60;
     volume = 90;
     videoTransparency = 60;

@@ -116,7 +116,7 @@ impl Cursor<'_> {
                 let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());
 
                 match inp.as_str() {
-                    "set" => return Keyword(Set),
+                    "global" => return Keyword(Global),
                     "vars" => return Keyword(Vars),
                     "lists" => return Keyword(Lists),
                     "broadcasts" => return Keyword(Broadcasts),

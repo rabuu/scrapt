@@ -35,7 +35,7 @@ pub enum Token {
 
 #[derive(Debug, PartialEq)]
 pub enum Keyword {
-    Set,
+    Global,
     Vars,
     Lists,
     Broadcasts,
