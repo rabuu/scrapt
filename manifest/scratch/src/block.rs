@@ -7,13 +7,28 @@ use crate::common::*;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Block {
-    Full(FullBlock),
     Primitive(PrimitiveBlock),
+    Full(Box<FullBlock>),
 }
 
 impl Block {
     pub fn builder() -> builder::BlockBuilder {
         builder::BlockBuilder
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PrimitiveBlock {
+    // TODO: investigate different numeral modes
+    Simple(u8, Value),
+    Advanced(u8, Name, Id),
+    AdvancedWithPos(u8, Name, Id, CodeCoord, CodeCoord),
+}
+
+impl PrimitiveBlock {
+    pub fn builder() -> builder::PrimitiveBlockBuilder {
+        builder::PrimitiveBlockBuilder
     }
 }
 
@@ -37,21 +52,6 @@ pub struct FullBlock {
     pub comment: Option<Id>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mutation: Option<Mutation>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum PrimitiveBlock {
-    // TODO: investigate different numeral modes
-    Simple(u8, Value),
-    Advanced(u8, Name, Id),
-    AdvancedWithPos(u8, Name, Id, CodeCoord, CodeCoord),
-}
-
-impl PrimitiveBlock {
-    pub fn builder() -> builder::PrimitiveBlockBuilder {
-        builder::PrimitiveBlockBuilder
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -117,7 +117,7 @@ pub struct PrototypeMutation {
     pub argumentdefaults: ArgArray<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct ArgArray<T: ToString>(String, #[serde(skip)] PhantomData<T>);
 

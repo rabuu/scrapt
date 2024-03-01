@@ -97,7 +97,7 @@ impl Cursor<'_> {
             }
 
             // numerics
-            c @ _ if c.is_ascii_digit() => {
+            c if c.is_ascii_digit() => {
                 let inp = self.eat_with_prev(|c| c.is_ascii_digit() || c == '.');
 
                 if let Ok(int) = inp.parse::<usize>() {
@@ -110,7 +110,7 @@ impl Cursor<'_> {
             }
 
             // keywords and idents
-            c @ _ if c.is_ascii_alphabetic() => {
+            c if c.is_ascii_alphabetic() => {
                 use self::token::Keyword::*;
 
                 let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());

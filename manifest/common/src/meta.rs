@@ -44,6 +44,7 @@ pub mod builder {
     use super::*;
     use crate::Version;
 
+    #[derive(Default)]
     pub struct MetadataBuilder {
         semver: Option<Version>,
         vm: Option<Version>,
@@ -52,11 +53,7 @@ pub mod builder {
 
     impl MetadataBuilder {
         pub fn new() -> MetadataBuilder {
-            MetadataBuilder {
-                semver: None,
-                vm: None,
-                agent: None,
-            }
+            Default::default()
         }
 
         pub fn semver(mut self, semver: Version) -> MetadataBuilder {
