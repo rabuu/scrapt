@@ -24,3 +24,4 @@ serde = { version = "1", features = ["derive"] }
 manifest_scrapt = { workspace = true }
 manifest_scratch = { workspace = true }
 lang = { workspace = true }
+clap = "4"
