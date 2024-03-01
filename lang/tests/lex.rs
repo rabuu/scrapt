@@ -32,6 +32,26 @@ fn simple_tokenization() {
 }
 
 #[test]
+fn keyword_tokenization() {
+    use Keyword::*;
+
+    let input = "global vars lists broadcasts foo costumes if";
+    assert_eq!(
+        tokenize(input),
+        vec![
+            Token::Keyword(Global),
+            Token::Keyword(Vars),
+            Token::Keyword(Lists),
+            Token::Keyword(Broadcasts),
+            Token::Ident(String::from("foo")),
+            Token::Keyword(Costumes),
+            Token::Keyword(If),
+            Token::Eof,
+        ]
+    );
+}
+
+#[test]
 fn illegal_character() {
     let input = "ü";
     let tokens = tokenize(input);

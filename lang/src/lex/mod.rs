@@ -115,20 +115,18 @@ impl Cursor<'_> {
 
                 let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());
 
-                match inp.as_str() {
-                    "global" => return Keyword(Global),
-                    "vars" => return Keyword(Vars),
-                    "lists" => return Keyword(Lists),
-                    "broadcasts" => return Keyword(Broadcasts),
-                    "costumes" => return Keyword(Costumes),
-                    "sounds" => return Keyword(Sounds),
-                    "repeat" => return Keyword(Repeat),
-                    "if" => return Keyword(If),
-                    "else" => return Keyword(Else),
-                    _ => (),
-                }
-
-                Ident(inp)
+                return match inp.as_str() {
+                    "global" => Keyword(Global),
+                    "vars" => Keyword(Vars),
+                    "lists" => Keyword(Lists),
+                    "broadcasts" => Keyword(Broadcasts),
+                    "costumes" => Keyword(Costumes),
+                    "sounds" => Keyword(Sounds),
+                    "repeat" => Keyword(Repeat),
+                    "if" => Keyword(If),
+                    "else" => Keyword(Else),
+                    _ => Ident(inp),
+                };
             }
 
             c => Illegal(c.to_string(), "Illegal character"),
