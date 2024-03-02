@@ -5,6 +5,8 @@
 
 use std::str::Chars;
 
+use crate::span::{SourcePosition, Span};
+
 const EOF: char = '\0';
 
 /// Peekable iterator over a char sequence
@@ -13,8 +15,13 @@ const EOF: char = '\0';
 /// the cursor can be advanced with `bump()` or `eat()`.
 #[derive(Debug)]
 pub struct Cursor<'a> {
+    // TODO: maybe better peeking using Peekable
     chars: Chars<'a>,
     prev: char,
+
+    // span information
+    curr_pos: SourcePosition,
+    prev_pos: SourcePosition,
 }
 
 impl<'a> Cursor<'a> {
@@ -23,24 +30,24 @@ impl<'a> Cursor<'a> {
         Cursor {
             chars: source.chars(),
             prev: EOF,
+            curr_pos: (1, 1),
+            prev_pos: (1, 0),
         }
     }
 
     /// Peek previous char
-    pub fn prev(&self) -> char {
+    pub fn peek_prev(&self) -> char {
         self.prev
     }
 
-    /// Peek first char
-    pub fn first(&self) -> char {
+    /// Peek current char
+    pub fn peek_this(&self) -> char {
         self.chars.clone().next().unwrap_or(EOF)
     }
 
-    /// Peek second char
-    pub fn second(&self) -> char {
-        let mut it = self.chars.clone();
-        it.next();
-        it.next().unwrap_or(EOF)
+    /// Peek next char
+    pub fn peek_next(&self) -> char {
+        self.chars.clone().skip(1).next().unwrap_or(EOF)
     }
 
     /// Checks if end of source is reached
@@ -49,26 +56,53 @@ impl<'a> Cursor<'a> {
     }
 
     /// Advance to the next char
-    pub fn bump(&mut self) -> Option<char> {
+    pub fn bump(&mut self) -> Option<(char, SourcePosition)> {
         let c = self.chars.next()?;
         self.prev = c;
-        Some(c)
+        self.prev_pos = self.curr_pos;
+
+        if self.prev == '\n' {
+            self.curr_pos.0 += 1;
+            self.curr_pos.1 = 1;
+        } else {
+            self.curr_pos.1 += 1;
+        }
+
+        Some((c, self.prev_pos))
     }
 
-    /// Consumes chars while predicate returns true or EOF is reached
-    pub fn eat(&mut self, mut predicate: impl FnMut(char) -> bool) -> String {
+    /// Consumes chars while predicate returns true until EOF is reached
+    pub fn eat(&mut self, predicate: impl Fn(char) -> bool) -> Option<(String, Span)> {
+        let begin = if predicate(self.peek_this()) {
+            self.curr_pos
+        } else {
+            return None;
+        };
+
         let mut eaten = String::new();
-        while predicate(self.first()) && !self.is_eof() {
-            eaten.push(self.bump().unwrap())
+        let mut end = None;
+
+        while let Some((c, pos)) = self.bump() {
+            if !predicate(c) || self.is_eof() {
+                break;
+            }
+
+            end = Some(pos);
+            eaten.push(c);
         }
-        eaten
+
+        Some((eaten, Span { begin, end }))
     }
 
     /// Works like `eat()` but includes the previously comsumed character as well
-    pub fn eat_with_prev(&mut self, predicate: impl FnMut(char) -> bool) -> String {
+    pub fn eat_with_prev(&mut self, predicate: impl Fn(char) -> bool) -> Option<(String, Span)> {
         let prev = self.prev;
-        let mut eaten = self.eat(predicate);
+        let begin = self.prev_pos;
+
+        let (mut eaten, mut span) = self.eat(predicate)?;
         eaten.insert(0, prev);
-        eaten
+        span.begin = begin;
+
+        Some((eaten, span))
     }
 }
