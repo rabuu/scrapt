@@ -5,7 +5,7 @@
 
 use std::str::Chars;
 
-use crate::span::{SourcePosition, Span};
+use crate::span::SourcePosition;
 
 const EOF: char = '\0';
 
@@ -35,11 +35,6 @@ impl<'a> Cursor<'a> {
         }
     }
 
-    /// Peek previous char
-    pub fn peek_prev(&self) -> char {
-        self.prev
-    }
-
     /// Peek current char
     pub fn peek_this(&self) -> char {
         self.chars.clone().next().unwrap_or(EOF)
@@ -50,13 +45,23 @@ impl<'a> Cursor<'a> {
         self.chars.clone().skip(1).next().unwrap_or(EOF)
     }
 
+    /// Get current position
+    pub fn position(&self) -> SourcePosition {
+        self.curr_pos
+    }
+
+    /// Get previous position
+    pub fn prev_position(&self) -> SourcePosition {
+        self.prev_pos
+    }
+
     /// Checks if end of source is reached
     pub fn is_eof(&self) -> bool {
         self.chars.as_str().is_empty()
     }
 
     /// Advance to the next char
-    pub fn bump(&mut self) -> Option<(char, SourcePosition)> {
+    pub fn bump(&mut self) -> Option<char> {
         let c = self.chars.next()?;
         self.prev = c;
         self.prev_pos = self.curr_pos;
@@ -68,41 +73,64 @@ impl<'a> Cursor<'a> {
             self.curr_pos.1 += 1;
         }
 
-        Some((c, self.prev_pos))
+        Some(c)
     }
 
     /// Consumes chars while predicate returns true until EOF is reached
-    pub fn eat(&mut self, predicate: impl Fn(char) -> bool) -> Option<(String, Span)> {
-        let begin = if predicate(self.peek_this()) {
-            self.curr_pos
-        } else {
-            return None;
-        };
-
+    pub fn eat(&mut self, predicate: impl Fn(char) -> bool) -> String {
         let mut eaten = String::new();
-        let mut end = None;
-
-        while let Some((c, pos)) = self.bump() {
-            if !predicate(c) || self.is_eof() {
-                break;
-            }
-
-            end = Some(pos);
-            eaten.push(c);
+        while predicate(self.peek_this()) && !self.is_eof() {
+            eaten.push(self.bump().unwrap());
         }
 
-        Some((eaten, Span { begin, end }))
+        eaten
     }
 
     /// Works like `eat()` but includes the previously comsumed character as well
-    pub fn eat_with_prev(&mut self, predicate: impl Fn(char) -> bool) -> Option<(String, Span)> {
+    pub fn eat_with_prev(&mut self, predicate: impl Fn(char) -> bool) -> String {
         let prev = self.prev;
-        let begin = self.prev_pos;
 
-        let (mut eaten, mut span) = self.eat(predicate)?;
+        let mut eaten = self.eat(predicate);
         eaten.insert(0, prev);
-        span.begin = begin;
 
-        Some((eaten, span))
+        eaten
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cursor_peek_and_bump() {
+        let mut cursor = Cursor::new("abc");
+
+        assert_eq!(cursor.peek_this(), 'a');
+        assert_eq!(cursor.peek_next(), 'b');
+
+        assert_eq!(cursor.bump(), Some('a'));
+        assert_eq!(cursor.bump(), Some('b'));
+
+        assert_eq!(cursor.peek_this(), 'c');
+        assert_eq!(cursor.peek_next(), '\0');
+    }
+
+    #[test]
+    fn cursor_eat() {
+        let mut cursor = Cursor::new("foo bar");
+
+        assert_eq!(cursor.eat(|c| !c.is_whitespace()), String::from("foo"));
+        assert_eq!(cursor.peek_this(), ' ');
+        assert_eq!(cursor.eat(|c| c.is_whitespace()), String::from(" "));
+        assert_eq!(cursor.eat(|c| c.is_whitespace()), String::from(""));
+        assert_eq!(cursor.eat(|c| c.is_ascii_alphabetic()), String::from("bar"));
+    }
+
+    #[test]
+    fn cursor_position() {
+        let mut cursor = Cursor::new("abc");
+        assert_eq!(cursor.position(), (1, 1));
+        cursor.bump();
+        assert_eq!(cursor.position(), (1, 2));
     }
 }
