@@ -30,6 +30,6 @@ fn build(project_path: PathBuf, manifest_path: PathBuf) {
     let stage_tokens = lang::lex::tokenize(&stage);
     println!("{:#?}", stage_tokens);
 
-    let target = lang::parse::parse(stage_tokens);
+    let target = lang::parse::parse(stage_tokens.into_iter().map(|(tok, _)| tok).collect());
     println!("{:#?}", target);
 }
