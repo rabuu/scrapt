@@ -21,6 +21,7 @@ manifest_scrapt = { path = "manifest/scrapt" }
 lang = { path = "lang" }
 
 serde = { version = "1", features = ["derive"] }
+itertools = "0.12"
 
 [dependencies]
 manifest_scrapt = { workspace = true }
