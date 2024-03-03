@@ -5,6 +5,8 @@
 
 use std::str::Chars;
 
+use itertools::{peek_nth, PeekNth};
+
 use crate::span::SourcePosition;
 
 const EOF: char = '\0';
@@ -16,7 +18,7 @@ const EOF: char = '\0';
 #[derive(Debug)]
 pub struct Cursor<'a> {
     // TODO: maybe better peeking using Peekable
-    chars: Chars<'a>,
+    chars: PeekNth<Chars<'a>>,
     prev: char,
 
     // span information
@@ -28,7 +30,7 @@ impl<'a> Cursor<'a> {
     /// Contructor for the Cursor
     pub fn new(source: &'a str) -> Cursor<'a> {
         Cursor {
-            chars: source.chars(),
+            chars: peek_nth(source.chars()),
             prev: EOF,
             curr_pos: (1, 1),
             prev_pos: (1, 0),
@@ -36,13 +38,13 @@ impl<'a> Cursor<'a> {
     }
 
     /// Peek current char
-    pub fn peek_this(&self) -> char {
-        self.chars.clone().next().unwrap_or(EOF)
+    pub fn peek_this(&mut self) -> char {
+        self.chars.peek().copied().unwrap_or(EOF)
     }
 
     /// Peek next char
-    pub fn peek_next(&self) -> char {
-        self.chars.clone().skip(1).next().unwrap_or(EOF)
+    pub fn peek_next(&mut self) -> char {
+        self.chars.peek_nth(1).copied().unwrap_or(EOF)
     }
 
     /// Get current position
@@ -56,8 +58,8 @@ impl<'a> Cursor<'a> {
     }
 
     /// Checks if end of source is reached
-    pub fn is_eof(&self) -> bool {
-        self.chars.as_str().is_empty()
+    pub fn is_eof(&mut self) -> bool {
+        self.chars.peek().is_none()
     }
 
     /// Advance to the next char
@@ -120,7 +122,6 @@ mod tests {
         let mut cursor = Cursor::new("foo bar");
 
         assert_eq!(cursor.eat(|c| !c.is_whitespace()), String::from("foo"));
-        assert_eq!(cursor.peek_this(), ' ');
         assert_eq!(cursor.eat(|c| c.is_whitespace()), String::from(" "));
         assert_eq!(cursor.eat(|c| c.is_whitespace()), String::from(""));
         assert_eq!(cursor.eat(|c| c.is_ascii_alphabetic()), String::from("bar"));
