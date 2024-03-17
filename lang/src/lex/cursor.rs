@@ -1,6 +1,6 @@
 //! Cursor module
 //!
-//! This module is stolen from Rusts lexer:
+//! This module is inspired by Rusts lexer but slightly modified.
 //! https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/cursor.rs.html
 
 use std::str::Chars;
@@ -13,11 +13,10 @@ const EOF: char = '\0';
 
 /// Peekable iterator over a char sequence
 ///
-/// Next chars can be peeked with `first()` or `second()`,
+/// Next chars can be peeked with `this()` or `next()`,
 /// the cursor can be advanced with `bump()` or `eat()`.
 #[derive(Debug)]
 pub struct Cursor<'a> {
-    // TODO: maybe better peeking using Peekable
     chars: PeekNth<Chars<'a>>,
     prev: char,
 
@@ -32,18 +31,22 @@ impl<'a> Cursor<'a> {
         Cursor {
             chars: peek_nth(source.chars()),
             prev: EOF,
-            curr_pos: (1, 1),
-            prev_pos: (1, 0),
+            curr_pos: SourcePosition::new(1, 1),
+            prev_pos: SourcePosition::new(1, 0),
         }
     }
 
     /// Peek current char
-    pub fn peek_this(&mut self) -> char {
+    ///
+    /// Note that a &mut self is needed for peeking
+    pub fn this(&mut self) -> char {
         self.chars.peek().copied().unwrap_or(EOF)
     }
 
     /// Peek next char
-    pub fn peek_next(&mut self) -> char {
+    ///
+    /// Note that a &mut self is needed for peeking
+    pub fn next(&mut self) -> char {
         self.chars.peek_nth(1).copied().unwrap_or(EOF)
     }
 
@@ -69,10 +72,10 @@ impl<'a> Cursor<'a> {
         self.prev_pos = self.curr_pos;
 
         if self.prev == '\n' {
-            self.curr_pos.0 += 1;
-            self.curr_pos.1 = 1;
+            self.curr_pos.row += 1;
+            self.curr_pos.col = 1;
         } else {
-            self.curr_pos.1 += 1;
+            self.curr_pos.col += 1;
         }
 
         Some(c)
@@ -81,7 +84,7 @@ impl<'a> Cursor<'a> {
     /// Consumes chars while predicate returns true until EOF is reached
     pub fn eat(&mut self, predicate: impl Fn(char) -> bool) -> String {
         let mut eaten = String::new();
-        while predicate(self.peek_this()) && !self.is_eof() {
+        while predicate(self.this()) && !self.is_eof() {
             eaten.push(self.bump().unwrap());
         }
 
@@ -107,14 +110,14 @@ mod tests {
     fn cursor_peek_and_bump() {
         let mut cursor = Cursor::new("abc");
 
-        assert_eq!(cursor.peek_this(), 'a');
-        assert_eq!(cursor.peek_next(), 'b');
+        assert_eq!(cursor.this(), 'a');
+        assert_eq!(cursor.next(), 'b');
 
         assert_eq!(cursor.bump(), Some('a'));
         assert_eq!(cursor.bump(), Some('b'));
 
-        assert_eq!(cursor.peek_this(), 'c');
-        assert_eq!(cursor.peek_next(), '\0');
+        assert_eq!(cursor.this(), 'c');
+        assert_eq!(cursor.next(), '\0');
     }
 
     #[test]
@@ -130,8 +133,8 @@ mod tests {
     #[test]
     fn cursor_position() {
         let mut cursor = Cursor::new("abc");
-        assert_eq!(cursor.position(), (1, 1));
+        assert_eq!(cursor.position(), SourcePosition::new(1, 1));
         cursor.bump();
-        assert_eq!(cursor.position(), (1, 2));
+        assert_eq!(cursor.position(), SourcePosition::new(1, 2));
     }
 }

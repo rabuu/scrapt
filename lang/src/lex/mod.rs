@@ -38,8 +38,8 @@ impl Cursor<'_> {
 
         match first_char {
             // slash or comment
-            '/' => match self.peek_this() {
-                '/' => match self.peek_next() {
+            '/' => match self.this() {
+                '/' => match self.next() {
                     '/' => {
                         self.bump();
                         self.bump();
@@ -75,7 +75,7 @@ impl Cursor<'_> {
             '>' => (ChevronR, Span::single(begin)),
 
             // colons
-            ':' => match self.peek_this() {
+            ':' => match self.this() {
                 ':' => {
                     self.bump();
                     (DoubleColon, Span::range(begin, self.prev_position()))
@@ -84,7 +84,7 @@ impl Cursor<'_> {
             },
 
             // minus or arrow
-            '-' => match self.peek_this() {
+            '-' => match self.this() {
                 '>' => {
                     self.bump();
                     (Arrow, Span::range(begin, self.prev_position()))
@@ -108,7 +108,7 @@ impl Cursor<'_> {
             }
 
             // raw idents
-            'r' if self.peek_this() == '#' && self.peek_next().is_ascii_alphabetic() => {
+            'r' if self.this() == '#' && self.next().is_ascii_alphabetic() => {
                 self.bump();
                 let ident = self.eat(|c| c.is_ascii_alphanumeric());
 
