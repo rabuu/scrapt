@@ -13,7 +13,7 @@ const EOF: char = '\0';
 
 /// Peekable iterator over a char sequence
 ///
-/// Next chars can be peeked with `this()` or `next()`,
+/// Next chars can be peeked with `peek_this()` or `peek_next()`,
 /// the cursor can be advanced with `bump()` or `eat()`.
 #[derive(Debug)]
 pub struct Cursor<'a> {
@@ -39,14 +39,14 @@ impl<'a> Cursor<'a> {
     /// Peek current char
     ///
     /// Note that a &mut self is needed for peeking
-    pub fn this(&mut self) -> char {
+    pub fn peek_this(&mut self) -> char {
         self.chars.peek().copied().unwrap_or(EOF)
     }
 
     /// Peek next char
     ///
     /// Note that a &mut self is needed for peeking
-    pub fn next(&mut self) -> char {
+    pub fn peek_next(&mut self) -> char {
         self.chars.peek_nth(1).copied().unwrap_or(EOF)
     }
 
@@ -84,7 +84,7 @@ impl<'a> Cursor<'a> {
     /// Consumes chars while predicate returns true until EOF is reached
     pub fn eat(&mut self, predicate: impl Fn(char) -> bool) -> String {
         let mut eaten = String::new();
-        while predicate(self.this()) && !self.is_eof() {
+        while predicate(self.peek_this()) && !self.is_eof() {
             eaten.push(self.bump().unwrap());
         }
 
@@ -110,14 +110,14 @@ mod tests {
     fn cursor_peek_and_bump() {
         let mut cursor = Cursor::new("abc");
 
-        assert_eq!(cursor.this(), 'a');
-        assert_eq!(cursor.next(), 'b');
+        assert_eq!(cursor.peek_this(), 'a');
+        assert_eq!(cursor.peek_next(), 'b');
 
         assert_eq!(cursor.bump(), Some('a'));
         assert_eq!(cursor.bump(), Some('b'));
 
-        assert_eq!(cursor.this(), 'c');
-        assert_eq!(cursor.next(), '\0');
+        assert_eq!(cursor.peek_this(), 'c');
+        assert_eq!(cursor.peek_next(), '\0');
     }
 
     #[test]

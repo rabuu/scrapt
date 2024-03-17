@@ -38,8 +38,8 @@ impl Cursor<'_> {
 
         match first_char {
             // slash or comment
-            '/' => match self.this() {
-                '/' => match self.next() {
+            '/' => match self.peek_this() {
+                '/' => match self.peek_next() {
                     '/' => {
                         self.bump();
                         self.bump();
@@ -75,7 +75,7 @@ impl Cursor<'_> {
             '>' => (ChevronR, Span::single(begin)),
 
             // colons
-            ':' => match self.this() {
+            ':' => match self.peek_this() {
                 ':' => {
                     self.bump();
                     (DoubleColon, Span::range(begin, self.prev_position()))
@@ -84,7 +84,7 @@ impl Cursor<'_> {
             },
 
             // minus or arrow
-            '-' => match self.this() {
+            '-' => match self.peek_this() {
                 '>' => {
                     self.bump();
                     (Arrow, Span::range(begin, self.prev_position()))
@@ -108,7 +108,7 @@ impl Cursor<'_> {
             }
 
             // raw idents
-            'r' if self.this() == '#' && self.next().is_ascii_alphabetic() => {
+            'r' if self.peek_this() == '#' && self.peek_next().is_ascii_alphabetic() => {
                 self.bump();
                 let ident = self.eat(|c| c.is_ascii_alphanumeric());
 
@@ -248,12 +248,17 @@ mod tests {
         let inp = "* global";
         let tokens = tokenize(inp);
 
+        use crate::span::SourcePosition;
+
         assert_eq!(
             tokens,
             vec![
-                (Token::Asterisk, Span::single((1, 1))),
-                (Token::Keyword(Keyword::Global), Span::range((1, 3), (1, 8))),
-                (Token::Eof, Span::single((1, 9))),
+                (Token::Asterisk, Span::single(SourcePosition::new(1, 1))),
+                (
+                    Token::Keyword(Keyword::Global),
+                    Span::range(SourcePosition::new(1, 3), SourcePosition::new(1, 8))
+                ),
+                (Token::Eof, Span::single(SourcePosition::new(1, 9))),
             ]
         )
     }
