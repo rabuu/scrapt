@@ -2,9 +2,9 @@ use std::fs;
 use std::path::PathBuf;
 
 use clap::Parser;
-use scrapt::cli;
 
 use manifest_scrapt::Manifest as ScraptManifest;
+use scrapt::cli;
 
 fn main() {
     let cli = cli::CliArgs::parse();
@@ -29,7 +29,4 @@ fn build(project_path: PathBuf, manifest_path: PathBuf) {
 
     let stage_tokens = lang::lex::tokenize(&stage);
     println!("{:#?}", stage_tokens);
-
-    let target = lang::parse::parse(stage_tokens.into_iter().map(|(tok, _)| tok).collect());
-    println!("{:#?}", target);
 }
