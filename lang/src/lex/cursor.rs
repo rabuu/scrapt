@@ -1,7 +1,7 @@
 //! Cursor module
 //!
 //! This module is inspired by Rusts lexer but slightly modified.
-//! https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/cursor.rs.html
+//! <https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/cursor.rs.html>
 
 use std::str::Chars;
 
