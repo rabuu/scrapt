@@ -20,7 +20,6 @@ pub struct Cursor<'a> {
     chars: PeekNth<Chars<'a>>,
     prev: char,
 
-    // span information
     curr_pos: SourcePosition,
     prev_pos: SourcePosition,
 }
