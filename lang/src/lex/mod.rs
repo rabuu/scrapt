@@ -2,9 +2,11 @@ pub use cursor::Cursor;
 
 use crate::span::Span;
 
-pub use self::token::{Keyword, Token};
+pub use error::LexerError;
+pub use token::{Keyword, Token};
 
 mod cursor;
+mod error;
 mod token;
 
 pub fn tokenize(source: &str) -> Vec<(Token, Span)> {
@@ -99,7 +101,7 @@ impl Cursor<'_> {
 
                 if closing_del != Some('"') {
                     return (
-                        Illegal(string, "Unterminated string literal"),
+                        Illegal(LexerError::UnterminatedStringLiteral),
                         Span::range(begin, self.prev_position()),
                     );
                 }
@@ -114,7 +116,7 @@ impl Cursor<'_> {
 
                 if ident.is_empty() {
                     return (
-                        Illegal(ident, "Illegal identifier"),
+                        Illegal(LexerError::IllegalIdent(ident)),
                         Span::range(begin, self.prev_position()),
                     );
                 }
@@ -132,7 +134,7 @@ impl Cursor<'_> {
                     (Float(float), Span::range(begin, self.prev_position()))
                 } else {
                     (
-                        Illegal(inp, "Non-number starting with numerical character"),
+                        Illegal(LexerError::BeginsWithNumber(inp)),
                         Span::range(begin, self.prev_position()),
                     )
                 }
@@ -164,7 +166,7 @@ impl Cursor<'_> {
             }
 
             c => (
-                Illegal(c.to_string(), "Illegal character"),
+                Illegal(LexerError::IllegalChar(c)),
                 Span::range(begin, self.prev_position()),
             ),
         }
@@ -233,14 +235,27 @@ mod tests {
     }
 
     #[test]
+    fn unterminated_string() {
+        let input = r#"string: "halllo"#;
+        let tokens: Vec<Token> = tokenize(input).into_iter().map(|(tok, _)| tok).collect();
+
+        assert_eq!(
+            tokens,
+            vec![
+                Token::Ident("string".to_string()),
+                Token::Colon,
+                Token::Illegal(LexerError::UnterminatedStringLiteral),
+                Token::Eof,
+            ]
+        )
+    }
+
+    #[test]
     fn illegal_character() {
         let input = "ü";
         let tokens = tokenize(input);
 
-        assert_eq!(
-            tokens[0].0,
-            Token::Illegal("ü".to_string(), "Illegal character")
-        );
+        assert_eq!(tokens[0].0, Token::Illegal(LexerError::IllegalChar('ü')));
     }
 
     #[test]

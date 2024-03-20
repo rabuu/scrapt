@@ -1,7 +1,9 @@
+use super::LexerError;
+
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Eof,
-    Illegal(String, &'static str),
+    Illegal(LexerError),
 
     Comment(String),
     MetaComment(String),
