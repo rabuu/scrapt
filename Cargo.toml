@@ -22,9 +22,12 @@ lang = { path = "lang" }
 
 serde = { version = "1", features = ["derive"] }
 itertools = "0.12"
+thiserror = "1"
+tracing = "0.1"
 
 [dependencies]
 manifest_scrapt = { workspace = true }
 manifest_scratch = { workspace = true }
 lang = { workspace = true }
 clap = { version = "4", features = ["derive"] }
+anyhow = "1"
