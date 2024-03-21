@@ -1,3 +1,5 @@
+use std::fmt::{self, Display};
+
 /// Atomic position in source file
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SourcePosition {
@@ -8,6 +10,12 @@ pub struct SourcePosition {
 impl SourcePosition {
     pub fn new(row: usize, col: usize) -> Self {
         SourcePosition { row, col }
+    }
+}
+
+impl fmt::Display for SourcePosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}:{}", self.row, self.col)
     }
 }
 
@@ -30,5 +38,14 @@ impl Span {
 
     pub fn range(begin: SourcePosition, end: SourcePosition) -> Self {
         Span::Range { begin, end }
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Span::Single(pos) => write!(f, "{pos}"),
+            Span::Range { begin, end } => write!(f, "{begin}-{end}"),
+        }
     }
 }

@@ -9,13 +9,13 @@ mod cursor;
 mod error;
 mod token;
 
-pub fn tokenize(source: &str) -> Vec<(Token, Span)> {
+pub fn tokenize(source: &str) -> Result<Vec<Token>, LexerError> {
     let mut cursor = Cursor::new(source);
     let mut tokens = Vec::new();
 
     loop {
-        let token = cursor.advance_token();
-        let is_eof = token.0 == Token::Eof;
+        let token = cursor.advance_token()?;
+        let is_eof = token == Token::Eof;
         tokens.push(token);
 
         if is_eof {
@@ -23,11 +23,11 @@ pub fn tokenize(source: &str) -> Vec<(Token, Span)> {
         }
     }
 
-    tokens
+    Ok(tokens)
 }
 
 impl Cursor<'_> {
-    pub fn advance_token(&mut self) -> (Token, Span) {
+    pub fn advance_token(&mut self) -> Result<Token, LexerError> {
         use Token::*;
 
         self.eat(|c| c.is_whitespace());
@@ -35,7 +35,7 @@ impl Cursor<'_> {
         let begin = self.position();
         let first_char = match self.bump() {
             Some(c) => c,
-            None => return (Eof, Span::single(self.position())),
+            None => return Ok(Eof),
         };
 
         match first_char {
@@ -45,53 +45,47 @@ impl Cursor<'_> {
                     '/' => {
                         self.bump();
                         self.bump();
-                        (
-                            MetaComment(self.eat(|c| c != '\n').trim().to_string()),
-                            Span::range(begin, self.prev_position()),
-                        )
+                        Ok(MetaComment(self.eat(|c| c != '\n').trim().to_string()))
                     }
                     _ => {
                         self.bump();
-                        (
-                            Comment(self.eat(|c| c != '\n').trim().to_string()),
-                            Span::range(begin, self.prev_position()),
-                        )
+                        Ok(Comment(self.eat(|c| c != '\n').trim().to_string()))
                     }
                 },
-                _ => (Slash, Span::single(begin)),
+                _ => Ok(Slash),
             },
 
             // one symbol tokens
-            '+' => (Plus, Span::single(begin)),
-            '=' => (Equal, Span::single(begin)),
-            ',' => (Comma, Span::single(begin)),
-            '*' => (Asterisk, Span::single(begin)),
-            ';' => (Semicolon, Span::single(begin)),
-            '(' => (ParenL, Span::single(begin)),
-            ')' => (ParenR, Span::single(begin)),
-            '{' => (CurlyL, Span::single(begin)),
-            '}' => (CurlyR, Span::single(begin)),
-            '[' => (BracketL, Span::single(begin)),
-            ']' => (BracketR, Span::single(begin)),
-            '<' => (ChevronL, Span::single(begin)),
-            '>' => (ChevronR, Span::single(begin)),
+            '+' => Ok(Plus),
+            '=' => Ok(Equal),
+            ',' => Ok(Comma),
+            '*' => Ok(Asterisk),
+            ';' => Ok(Semicolon),
+            '(' => Ok(ParenL),
+            ')' => Ok(ParenR),
+            '{' => Ok(CurlyL),
+            '}' => Ok(CurlyR),
+            '[' => Ok(BracketL),
+            ']' => Ok(BracketR),
+            '<' => Ok(ChevronL),
+            '>' => Ok(ChevronR),
 
             // colons
             ':' => match self.peek_this() {
                 ':' => {
                     self.bump();
-                    (DoubleColon, Span::range(begin, self.prev_position()))
+                    Ok(DoubleColon)
                 }
-                _ => (Colon, Span::single(begin)),
+                _ => Ok(Colon),
             },
 
             // minus or arrow
             '-' => match self.peek_this() {
                 '>' => {
                     self.bump();
-                    (Arrow, Span::range(begin, self.prev_position()))
+                    Ok(Arrow)
                 }
-                _ => (Minus, Span::single(begin)),
+                _ => Ok(Minus),
             },
 
             // strings
@@ -100,13 +94,12 @@ impl Cursor<'_> {
                 let closing_del = self.bump();
 
                 if closing_del != Some('"') {
-                    return (
-                        Illegal(LexerError::UnterminatedStringLiteral),
-                        Span::range(begin, self.prev_position()),
-                    );
+                    return Err(LexerError::UnterminatedStringLiteral {
+                        span: Span::range(begin, self.prev_position()),
+                    });
                 }
 
-                (Str(string), Span::range(begin, self.prev_position()))
+                Ok(Str(string))
             }
 
             // raw idents
@@ -115,13 +108,13 @@ impl Cursor<'_> {
                 let ident = self.eat(|c| c.is_ascii_alphanumeric());
 
                 if ident.is_empty() {
-                    return (
-                        Illegal(LexerError::IllegalIdent(ident)),
-                        Span::range(begin, self.prev_position()),
-                    );
+                    return Err(LexerError::IllegalIdent {
+                        ident,
+                        span: Span::range(begin, self.prev_position()),
+                    });
                 }
 
-                (Ident(ident), Span::range(begin, self.prev_position()))
+                Ok(Ident(ident))
             }
 
             // numerics
@@ -129,14 +122,14 @@ impl Cursor<'_> {
                 let inp = self.eat_with_prev(|c| c.is_ascii_digit() || c == '.');
 
                 if let Ok(int) = inp.parse::<usize>() {
-                    (Int(int), Span::range(begin, self.prev_position()))
+                    Ok(Int(int))
                 } else if let Ok(float) = inp.parse::<f64>() {
-                    (Float(float), Span::range(begin, self.prev_position()))
+                    Ok(Float(float))
                 } else {
-                    (
-                        Illegal(LexerError::BeginsWithNumber(inp)),
-                        Span::range(begin, self.prev_position()),
-                    )
+                    Err(LexerError::BeginsWithNumber {
+                        word: inp,
+                        span: Span::range(begin, self.prev_position()),
+                    })
                 }
             }
 
@@ -162,13 +155,13 @@ impl Cursor<'_> {
                     _ => Ident(inp),
                 };
 
-                (kw, Span::range(begin, self.prev_position()))
+                Ok(kw)
             }
 
-            c => (
-                Illegal(LexerError::IllegalChar(c)),
-                Span::range(begin, self.prev_position()),
-            ),
+            c => Err(LexerError::IllegalChar {
+                c,
+                span: Span::range(begin, self.prev_position()),
+            }),
         }
     }
 }
@@ -176,6 +169,7 @@ impl Cursor<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::span::SourcePosition;
 
     #[test]
     fn simple_tokenization() {
@@ -183,10 +177,7 @@ mod tests {
 
         let input = "+-=,/*:;::->(){}[]<>";
         assert_eq!(
-            tokenize(input)
-                .into_iter()
-                .map(|(tok, _)| tok)
-                .collect::<Vec<Token>>(),
+            tokenize(input).unwrap(),
             vec![
                 Plus,
                 Minus,
@@ -217,10 +208,7 @@ mod tests {
 
         let input = "global vars lists broadcasts foo costumes if";
         assert_eq!(
-            tokenize(input)
-                .into_iter()
-                .map(|(tok, _)| tok)
-                .collect::<Vec<Token>>(),
+            tokenize(input).unwrap(),
             vec![
                 Token::Keyword(Global),
                 Token::Keyword(Vars),
@@ -237,44 +225,26 @@ mod tests {
     #[test]
     fn unterminated_string() {
         let input = r#"string: "halllo"#;
-        let tokens: Vec<Token> = tokenize(input).into_iter().map(|(tok, _)| tok).collect();
-
+        let err = tokenize(input).unwrap_err();
         assert_eq!(
-            tokens,
-            vec![
-                Token::Ident("string".to_string()),
-                Token::Colon,
-                Token::Illegal(LexerError::UnterminatedStringLiteral),
-                Token::Eof,
-            ]
+            err,
+            LexerError::UnterminatedStringLiteral {
+                span: Span::range(SourcePosition::new(1, 10), SourcePosition::new(1, 15))
+            }
         )
     }
 
     #[test]
     fn illegal_character() {
         let input = "ü";
-        let tokens = tokenize(input);
-
-        assert_eq!(tokens[0].0, Token::Illegal(LexerError::IllegalChar('ü')));
-    }
-
-    #[test]
-    fn simple_spanned_tokens() {
-        let inp = "* global";
-        let tokens = tokenize(inp);
-
-        use crate::span::SourcePosition;
+        let err = tokenize(input).unwrap_err();
 
         assert_eq!(
-            tokens,
-            vec![
-                (Token::Asterisk, Span::single(SourcePosition::new(1, 1))),
-                (
-                    Token::Keyword(Keyword::Global),
-                    Span::range(SourcePosition::new(1, 3), SourcePosition::new(1, 8))
-                ),
-                (Token::Eof, Span::single(SourcePosition::new(1, 9))),
-            ]
-        )
+            err,
+            LexerError::IllegalChar {
+                c: 'ü',
+                span: Span::single(SourcePosition::new(1, 1))
+            }
+        );
     }
 }
