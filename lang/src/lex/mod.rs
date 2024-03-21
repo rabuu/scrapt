@@ -23,8 +23,8 @@ mod token;
 /// # Errors
 /// The function returns only the *first* [LexError].
 #[instrument(skip(source))]
-pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
-    let mut cursor = Cursor::new(source);
+pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<Token>, LexError> {
+    let mut cursor = Cursor::new(source.as_ref());
     let mut tokens = Vec::new();
 
     loop {
