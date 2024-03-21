@@ -1,15 +1,29 @@
-pub use cursor::Cursor;
+//! Lexing module
+//!
+//! This module contains the lexing logic of the language.
+//! The main way of interacting with the lexer is using the [tokenize] function.
+
+use tracing::{instrument, trace};
 
 use crate::span::Span;
 
-pub use error::LexerError;
+use cursor::Cursor;
+pub use error::LexError;
 pub use token::{Keyword, Token};
 
 mod cursor;
 mod error;
 mod token;
 
-pub fn tokenize(source: &str) -> Result<Vec<Token>, LexerError> {
+/// Tokenize a source string
+///
+/// This function is the interface of the lexer.
+/// It takes a source string and returns the found [Token]s of the valid source file.
+///
+/// # Errors
+/// The function returns only the *first* [LexError].
+#[instrument(skip(source))]
+pub fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
     let mut cursor = Cursor::new(source);
     let mut tokens = Vec::new();
 
@@ -23,11 +37,12 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexerError> {
         }
     }
 
+    trace!("successfully tokenized file");
     Ok(tokens)
 }
 
 impl Cursor<'_> {
-    pub fn advance_token(&mut self) -> Result<Token, LexerError> {
+    fn advance_token(&mut self) -> Result<Token, LexError> {
         use Token::*;
 
         self.eat(|c| c.is_whitespace());
@@ -94,7 +109,7 @@ impl Cursor<'_> {
                 let closing_del = self.bump();
 
                 if closing_del != Some('"') {
-                    return Err(LexerError::UnterminatedStringLiteral {
+                    return Err(LexError::UnterminatedStringLiteral {
                         span: Span::range(begin, self.prev_position()),
                     });
                 }
@@ -108,7 +123,7 @@ impl Cursor<'_> {
                 let ident = self.eat(|c| c.is_ascii_alphanumeric());
 
                 if ident.is_empty() {
-                    return Err(LexerError::IllegalIdent {
+                    return Err(LexError::IllegalIdent {
                         ident,
                         span: Span::range(begin, self.prev_position()),
                     });
@@ -126,7 +141,7 @@ impl Cursor<'_> {
                 } else if let Ok(float) = inp.parse::<f64>() {
                     Ok(Float(float))
                 } else {
-                    Err(LexerError::BeginsWithNumber {
+                    Err(LexError::BeginsWithNumber {
                         word: inp,
                         span: Span::range(begin, self.prev_position()),
                     })
@@ -158,7 +173,7 @@ impl Cursor<'_> {
                 Ok(kw)
             }
 
-            c => Err(LexerError::IllegalChar {
+            c => Err(LexError::IllegalChar {
                 c,
                 span: Span::single(begin),
             }),
@@ -228,7 +243,7 @@ mod tests {
         let err = tokenize(input).unwrap_err();
         assert_eq!(
             err,
-            LexerError::UnterminatedStringLiteral {
+            LexError::UnterminatedStringLiteral {
                 span: Span::range(SourcePosition::new(1, 9), SourcePosition::new(1, 15))
             }
         )
@@ -241,7 +256,7 @@ mod tests {
 
         assert_eq!(
             err,
-            LexerError::IllegalChar {
+            LexError::IllegalChar {
                 c: 'ü',
                 span: Span::single(SourcePosition::new(1, 1))
             }

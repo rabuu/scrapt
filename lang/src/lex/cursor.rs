@@ -16,7 +16,7 @@ const EOF: char = '\0';
 /// Next chars can be peeked with `peek_this()` or `peek_next()`,
 /// the cursor can be advanced with `bump()` or `eat()`.
 #[derive(Debug)]
-pub struct Cursor<'a> {
+pub(super) struct Cursor<'a> {
     chars: PeekNth<Chars<'a>>,
     prev: char,
 

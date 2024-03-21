@@ -1,9 +1,14 @@
+//! Lexing error module
+
 use thiserror::Error;
 
 use crate::span::Span;
 
+/// Error type for the lexing step
+///
+/// Probably returned by [tokenize](crate::lex::tokenize).
 #[derive(Debug, Error, PartialEq, Eq)]
-pub enum LexerError {
+pub enum LexError {
     #[error("unterminated string literal at {span}")]
     UnterminatedStringLiteral { span: Span },
 

@@ -1,3 +1,8 @@
+//! Span module
+//!
+//! This module exposes the [SourcePosition] and [Span] types for working with positions in the
+//! source file.
+
 use std::fmt::{self, Display};
 
 /// Atomic position in source file
@@ -21,7 +26,7 @@ impl fmt::Display for SourcePosition {
 
 /// Variable-length position in source file
 ///
-/// Can be a `Single` position or a `Range`.
+/// Can be a [single](Span::Single) position or a [range](Span::Range).
 #[derive(Debug, PartialEq, Eq)]
 pub enum Span {
     Single(SourcePosition),

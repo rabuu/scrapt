@@ -1,3 +1,4 @@
+/// A lexical Token of the language
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Eof,
@@ -32,6 +33,7 @@ pub enum Token {
     ChevronR,
 }
 
+/// A keyword of the language
 #[derive(Debug, PartialEq)]
 pub enum Keyword {
     Global,
