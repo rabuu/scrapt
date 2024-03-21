@@ -160,7 +160,7 @@ impl Cursor<'_> {
 
             c => Err(LexerError::IllegalChar {
                 c,
-                span: Span::range(begin, self.prev_position()),
+                span: Span::single(begin),
             }),
         }
     }
@@ -229,7 +229,7 @@ mod tests {
         assert_eq!(
             err,
             LexerError::UnterminatedStringLiteral {
-                span: Span::range(SourcePosition::new(1, 10), SourcePosition::new(1, 15))
+                span: Span::range(SourcePosition::new(1, 9), SourcePosition::new(1, 15))
             }
         )
     }
