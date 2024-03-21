@@ -1,12 +1,15 @@
 use std::fs;
 use std::path::PathBuf;
 
+use anyhow::Result;
 use clap::Parser;
 
 use manifest_scrapt::Manifest as ScraptManifest;
 use scrapt::cli;
 
-fn main() {
+fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+
     let cli = cli::CliArgs::parse();
 
     match cli.cmd {
@@ -20,6 +23,8 @@ fn main() {
         }
         cli::Cmd::Generate(_) => unimplemented!(),
     }
+
+    Ok(())
 }
 
 fn build(project_path: PathBuf, manifest_path: PathBuf) {
