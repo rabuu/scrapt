@@ -9,7 +9,7 @@ use crate::span::Span;
 
 use cursor::Cursor;
 pub use error::LexError;
-pub use token::{Keyword, Token};
+pub use token::{Keyword, SpannedToken, Token};
 
 mod cursor;
 mod error;
@@ -23,7 +23,7 @@ mod token;
 /// # Errors
 /// The function returns only the *first* [LexError].
 #[instrument(skip(source))]
-pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<Token>, LexError> {
+pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<SpannedToken>, LexError> {
     let mut cursor = Cursor::new(source.as_ref());
     let mut tokens = Vec::new();
 
@@ -42,7 +42,7 @@ pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<Token>, LexError> {
 }
 
 impl Cursor<'_> {
-    fn advance_token(&mut self) -> Result<Token, LexError> {
+    fn advance_token(&mut self) -> Result<SpannedToken, LexError> {
         use Token::*;
 
         self.eat(|c| c.is_whitespace());
@@ -50,7 +50,7 @@ impl Cursor<'_> {
         let begin = self.position();
         let first_char = match self.bump() {
             Some(c) => c,
-            None => return Ok(Eof),
+            None => return Ok(Eof.position(begin)),
         };
 
         match first_char {
@@ -60,47 +60,49 @@ impl Cursor<'_> {
                     '/' => {
                         self.bump();
                         self.bump();
-                        Ok(MetaComment(self.eat(|c| c != '\n').trim().to_string()))
+                        Ok(MetaComment(self.eat(|c| c != '\n').trim().to_string())
+                            .span(begin, self.prev_position()))
                     }
                     _ => {
                         self.bump();
-                        Ok(Comment(self.eat(|c| c != '\n').trim().to_string()))
+                        Ok(Comment(self.eat(|c| c != '\n').trim().to_string())
+                            .span(begin, self.prev_position()))
                     }
                 },
-                _ => Ok(Slash),
+                _ => Ok(Slash.position(begin)),
             },
 
             // one symbol tokens
-            '+' => Ok(Plus),
-            '=' => Ok(Equal),
-            ',' => Ok(Comma),
-            '*' => Ok(Asterisk),
-            ';' => Ok(Semicolon),
-            '(' => Ok(ParenL),
-            ')' => Ok(ParenR),
-            '{' => Ok(CurlyL),
-            '}' => Ok(CurlyR),
-            '[' => Ok(BracketL),
-            ']' => Ok(BracketR),
-            '<' => Ok(ChevronL),
-            '>' => Ok(ChevronR),
+            '+' => Ok(Plus.position(begin)),
+            '=' => Ok(Equal.position(begin)),
+            ',' => Ok(Comma.position(begin)),
+            '*' => Ok(Asterisk.position(begin)),
+            ';' => Ok(Semicolon.position(begin)),
+            '(' => Ok(ParenL.position(begin)),
+            ')' => Ok(ParenR.position(begin)),
+            '{' => Ok(CurlyL.position(begin)),
+            '}' => Ok(CurlyR.position(begin)),
+            '[' => Ok(BracketL.position(begin)),
+            ']' => Ok(BracketR.position(begin)),
+            '<' => Ok(ChevronL.position(begin)),
+            '>' => Ok(ChevronR.position(begin)),
 
             // colons
             ':' => match self.peek_this() {
                 ':' => {
                     self.bump();
-                    Ok(DoubleColon)
+                    Ok(DoubleColon.span(begin, self.prev_position()))
                 }
-                _ => Ok(Colon),
+                _ => Ok(Colon.position(begin)),
             },
 
             // minus or arrow
             '-' => match self.peek_this() {
                 '>' => {
                     self.bump();
-                    Ok(Arrow)
+                    Ok(Arrow.span(begin, self.prev_position()))
                 }
-                _ => Ok(Minus),
+                _ => Ok(Minus.position(begin)),
             },
 
             // strings
@@ -114,7 +116,7 @@ impl Cursor<'_> {
                     });
                 }
 
-                Ok(Str(string))
+                Ok(Str(string).span(begin, self.prev_position()))
             }
 
             // raw idents
@@ -129,7 +131,7 @@ impl Cursor<'_> {
                     });
                 }
 
-                Ok(Ident(ident))
+                Ok(Ident(ident).span(begin, self.prev_position()))
             }
 
             // numerics
@@ -137,9 +139,9 @@ impl Cursor<'_> {
                 let inp = self.eat_with_prev(|c| c.is_ascii_digit() || c == '.');
 
                 if let Ok(int) = inp.parse::<usize>() {
-                    Ok(Int(int))
+                    Ok(Int(int).span(begin, self.prev_position()))
                 } else if let Ok(float) = inp.parse::<f64>() {
-                    Ok(Float(float))
+                    Ok(Float(float).span(begin, self.prev_position()))
                 } else {
                     Err(LexError::BeginsWithNumber {
                         word: inp,
@@ -170,7 +172,7 @@ impl Cursor<'_> {
                     _ => Ident(inp),
                 };
 
-                Ok(kw)
+                Ok(kw.span(begin, self.prev_position()))
             }
 
             c => Err(LexError::IllegalChar {

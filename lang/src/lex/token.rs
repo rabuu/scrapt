@@ -1,4 +1,20 @@
-/// A lexical Token of the language
+use crate::span::{SourcePosition, Span};
+
+/// A lexical token of the language including span
+#[derive(Debug)]
+pub struct SpannedToken {
+    pub inner: Token,
+    pub span: Span,
+}
+
+/// SpannedTokens are equal to a [Token] if the inner token is the same
+impl PartialEq<Token> for SpannedToken {
+    fn eq(&self, other: &Token) -> bool {
+        self.inner == *other
+    }
+}
+
+/// A lexical token of the language
 #[derive(Debug, PartialEq)]
 pub enum Token {
     Eof,
@@ -31,6 +47,22 @@ pub enum Token {
     BracketR,
     ChevronL,
     ChevronR,
+}
+
+impl Token {
+    pub fn span(self, begin: SourcePosition, end: SourcePosition) -> SpannedToken {
+        SpannedToken {
+            inner: self,
+            span: Span::range(begin, end),
+        }
+    }
+
+    pub fn position(self, pos: SourcePosition) -> SpannedToken {
+        SpannedToken {
+            inner: self,
+            span: Span::single(pos),
+        }
+    }
 }
 
 /// A keyword of the language
