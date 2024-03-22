@@ -68,6 +68,7 @@ impl Token {
 /// A keyword of the language
 #[derive(Debug, PartialEq)]
 pub enum Keyword {
+    // headers
     Global,
     Vars,
     Lists,
@@ -85,4 +86,33 @@ pub enum Keyword {
     Repeat,
     If,
     Else,
+}
+
+impl Keyword {
+    pub fn is_header(&self) -> bool {
+        use Keyword::*;
+
+        match *self {
+            Global | Vars | Lists | Broadcasts | Costumes | Sounds => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_img_type(&self) -> bool {
+        use Keyword::*;
+
+        match *self {
+            Svg | Png => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_audio_type(&self) -> bool {
+        use Keyword::*;
+
+        match *self {
+            Wav | Mp4 => true,
+            _ => false,
+        }
+    }
 }
