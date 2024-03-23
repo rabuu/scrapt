@@ -26,13 +26,13 @@ broadcasts {
 }
 
 costumes {
-	backdrop1: SVG;
-	*backdrop2: PNG = "cool-picture.pic";
+    backdrop1: SVG;
+    *backdrop2: PNG = "cool-picture.pic";
 }
 
 sounds {
-	sound1: WAV;
-	sound2: MP4 = "cool-sound.snd";
+    sound1: WAV;
+    sound2: MP4 = "cool-sound.snd";
 }
 
 -> events::Flag {
