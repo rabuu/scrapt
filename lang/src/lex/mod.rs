@@ -5,7 +5,10 @@
 
 use tracing::{instrument, trace};
 
-use crate::span::Span;
+use crate::{
+    media_type::{AudioType, ImgType},
+    span::Span,
+};
 
 use cursor::Cursor;
 pub use error::LexError;
@@ -162,10 +165,10 @@ impl Cursor<'_> {
                     "broadcasts" => Keyword(Broadcasts),
                     "costumes" => Keyword(Costumes),
                     "sounds" => Keyword(Sounds),
-                    "SVG" => Keyword(Svg),
-                    "PNG" => Keyword(Png),
-                    "WAV" => Keyword(Wav),
-                    "MP4" => Keyword(Mp4),
+                    "SVG" => Keyword(Img(ImgType::Svg)),
+                    "PNG" => Keyword(Img(ImgType::Png)),
+                    "WAV" => Keyword(Audio(AudioType::Wav)),
+                    "MP4" => Keyword(Audio(AudioType::Mp4)),
                     "repeat" => Keyword(Repeat),
                     "if" => Keyword(If),
                     "else" => Keyword(Else),

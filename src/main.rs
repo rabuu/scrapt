@@ -19,7 +19,7 @@ fn main() -> Result<()> {
                 .manifest_path
                 .unwrap_or(project_path.join("project.toml"));
 
-            build(project_path, manifest_path);
+            build(project_path, manifest_path)?;
         }
         cli::Cmd::Generate(_) => unimplemented!(),
     }
@@ -27,11 +27,13 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn build(project_path: PathBuf, manifest_path: PathBuf) {
+fn build(project_path: PathBuf, manifest_path: PathBuf) -> Result<()> {
     let _manifest = ScraptManifest::parse(&fs::read_to_string(manifest_path).unwrap()).unwrap();
 
     let stage = fs::read_to_string(project_path.join("stage.scr")).unwrap();
 
-    let stage_tokens = lang::lex::tokenize(&stage);
-    println!("{:#?}", stage_tokens);
+    let stage_tokens = lang::lex::tokenize(&stage)?;
+    lang::parse::parse_tokens(stage_tokens)?;
+
+    Ok(())
 }

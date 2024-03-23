@@ -1,4 +1,7 @@
-use crate::span::{SourcePosition, Span};
+use crate::{
+    media_type::{AudioType, ImgType},
+    span::{SourcePosition, Span},
+};
 
 /// A lexical token of the language including span
 #[derive(Debug)]
@@ -65,8 +68,41 @@ impl Token {
     }
 }
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            Token::Eof => write!(f, "EOF"),
+            Token::Comment(_) => write!(f, "comment"),
+            Token::MetaComment(_) => write!(f, "meta comment"),
+            Token::Keyword(kw) => write!(f, "{kw}"),
+            Token::Ident(_) => write!(f, "identifier"),
+            Token::Int(_) => write!(f, "integer"),
+            Token::Float(_) => write!(f, "float"),
+            Token::Str(_) => write!(f, "string"),
+            Token::Plus => write!(f, "+"),
+            Token::Minus => write!(f, "-"),
+            Token::Equal => write!(f, "="),
+            Token::Comma => write!(f, ","),
+            Token::Slash => write!(f, "/"),
+            Token::Asterisk => write!(f, "*"),
+            Token::Colon => write!(f, ":"),
+            Token::DoubleColon => write!(f, "::"),
+            Token::Semicolon => write!(f, ";"),
+            Token::Arrow => write!(f, "->"),
+            Token::ParenL => write!(f, "("),
+            Token::ParenR => write!(f, ")"),
+            Token::CurlyL => write!(f, "{{"),
+            Token::CurlyR => write!(f, "}}"),
+            Token::BracketL => write!(f, "["),
+            Token::BracketR => write!(f, "]"),
+            Token::ChevronL => write!(f, "<"),
+            Token::ChevronR => write!(f, ">"),
+        }
+    }
+}
+
 /// A keyword of the language
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Keyword {
     // headers
     Global,
@@ -77,10 +113,8 @@ pub enum Keyword {
     Sounds,
 
     // media types
-    Svg,
-    Png,
-    Wav,
-    Mp4,
+    Img(ImgType),
+    Audio(AudioType),
 
     // control flow
     Repeat,
@@ -97,22 +131,22 @@ impl Keyword {
             _ => false,
         }
     }
+}
 
-    pub fn is_img_type(&self) -> bool {
-        use Keyword::*;
-
+impl std::fmt::Display for Keyword {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
-            Svg | Png => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_audio_type(&self) -> bool {
-        use Keyword::*;
-
-        match *self {
-            Wav | Mp4 => true,
-            _ => false,
+            Keyword::Global => write!(f, "global"),
+            Keyword::Vars => write!(f, "vars"),
+            Keyword::Lists => write!(f, "lists"),
+            Keyword::Broadcasts => write!(f, "broadcasts"),
+            Keyword::Costumes => write!(f, "costumes"),
+            Keyword::Sounds => write!(f, "sounds"),
+            Keyword::Img(_) => write!(f, "image type"),
+            Keyword::Audio(_) => write!(f, "audio type"),
+            Keyword::Repeat => write!(f, "repeat"),
+            Keyword::If => write!(f, "if"),
+            Keyword::Else => write!(f, "else"),
         }
     }
 }

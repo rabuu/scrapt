@@ -1,3 +1,4 @@
 pub mod lex;
+mod media_type;
 pub mod parse;
-pub mod span;
+mod span;
