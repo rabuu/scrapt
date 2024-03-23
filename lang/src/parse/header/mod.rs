@@ -16,7 +16,7 @@ where
     T: Iterator<Item = lex::SpannedToken>,
 {
     match tokens.peek().map(|t| &t.inner) {
-        Some(&lex::Token::Keyword(lex::Keyword::Costumes)) => {
+        Some(&lex::Token::Costumes) => {
             costumes::parse_costumes_header(tokens)?;
         }
         _ => (),

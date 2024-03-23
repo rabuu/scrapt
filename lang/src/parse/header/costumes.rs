@@ -1,8 +1,8 @@
 use std::iter::Peekable;
 
-use crate::lex::{Keyword, SpannedToken, Token};
+use crate::lex::{SpannedToken, TokenKind};
 use crate::media_type::ImgType;
-use crate::parse::ParseError;
+use crate::parse::{expect_token, is_next_token, ParseError};
 
 #[derive(Debug)]
 pub struct Costume {
@@ -14,36 +14,11 @@ pub struct Costume {
 pub fn parse_costumes_header(
     tokens: &mut Peekable<impl Iterator<Item = SpannedToken>>,
 ) -> Result<(), ParseError> {
-    let Some(header_type) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Keyword(Keyword::Costumes),
-        });
-    };
-
-    if header_type.inner != Token::Keyword(Keyword::Costumes) {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Keyword(Keyword::Costumes),
-            got: header_type.inner,
-            span: header_type.span,
-        });
-    }
-
-    let Some(open_curly) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::CurlyL,
-        });
-    };
-
-    if open_curly.inner != Token::CurlyL {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::CurlyL,
-            got: open_curly.inner,
-            span: open_curly.span,
-        });
-    }
+    expect_token(tokens, TokenKind::Costumes)?;
+    expect_token(tokens, TokenKind::CurlyL)?;
 
     loop {
-        if tokens.peek().map(|t| &t.inner) == Some(&Token::CurlyR) {
+        if is_next_token(tokens, TokenKind::CurlyR) {
             break;
         }
 
@@ -51,19 +26,7 @@ pub fn parse_costumes_header(
         eprintln!("{costume:?}");
     }
 
-    let Some(closing_curly) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::CurlyR,
-        });
-    };
-
-    if closing_curly.inner != Token::CurlyR {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::CurlyR,
-            got: closing_curly.inner,
-            span: closing_curly.span,
-        });
-    }
+    expect_token(tokens, TokenKind::CurlyR)?;
 
     Ok(())
 }
@@ -72,60 +35,25 @@ pub fn parse_costume(
     tokens: &mut Peekable<impl Iterator<Item = SpannedToken>>,
 ) -> Result<Costume, ParseError> {
     // check for *
-    let current = if tokens.peek().map(|t| &t.inner) == Some(&Token::Asterisk) {
+    let current = is_next_token(tokens, TokenKind::Asterisk);
+    if current {
         let _ = tokens.next();
-        true
-    } else {
-        false
-    };
-
-    // expect name
-    let Some(costume_name) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Ident(String::new()),
-        });
-    };
-
-    let Token::Ident(costume_name) = costume_name.inner else {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Ident(String::new()),
-            got: costume_name.inner,
-            span: costume_name.span,
-        });
-    };
-
-    // expect colon
-    let Some(colon) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Colon,
-        });
-    };
-
-    if colon.inner != Token::Colon {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Colon,
-            got: colon.inner,
-            span: colon.span,
-        });
     }
 
-    // expect image type
-    let Some(img_type) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Keyword(Keyword::Img(ImgType::Svg)),
-        });
-    };
+    let costume_name = expect_token(tokens, TokenKind::Ident)?
+        .inner
+        .try_to_inner_string()
+        .unwrap();
 
-    let Token::Keyword(Keyword::Img(img_type)) = img_type.inner else {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Keyword(Keyword::Img(ImgType::Svg)),
-            got: img_type.inner,
-            span: img_type.span,
-        });
-    };
+    expect_token(tokens, TokenKind::Colon)?;
+
+    let img_type = expect_token(tokens, TokenKind::ImgType)?
+        .inner
+        .try_to_inner_img_type()
+        .unwrap();
 
     // return if terminated
-    if tokens.peek().map(|t| &t.inner) == Some(&Token::Semicolon) {
+    if is_next_token(tokens, TokenKind::Semicolon) {
         let _ = tokens.next();
         return Ok(Costume {
             current,
@@ -134,50 +62,14 @@ pub fn parse_costume(
         });
     }
 
-    // expect =
-    let Some(equals) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Equal,
-        });
-    };
+    expect_token(tokens, TokenKind::Equal)?;
 
-    if equals.inner != Token::Equal {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Equal,
-            got: equals.inner,
-            span: equals.span,
-        });
-    }
+    let path = expect_token(tokens, TokenKind::Str)?
+        .inner
+        .try_to_inner_string()
+        .unwrap();
 
-    // expect path
-    let Some(path) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Str(String::new()),
-        });
-    };
-
-    let Token::Str(path) = path.inner else {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Str(String::new()),
-            got: path.inner,
-            span: path.span,
-        });
-    };
-
-    // expect semicolon
-    let Some(semicolon) = tokens.next() else {
-        return Err(ParseError::ExpectedTokenButEnd {
-            expected: Token::Semicolon,
-        });
-    };
-
-    if semicolon.inner != Token::Semicolon {
-        return Err(ParseError::ExpectedAnotherToken {
-            expected: Token::Semicolon,
-            got: semicolon.inner,
-            span: semicolon.span,
-        });
-    }
+    expect_token(tokens, TokenKind::Semicolon)?;
 
     Ok(Costume {
         current,

@@ -25,7 +25,6 @@ pub enum Token {
     Comment(String),
     MetaComment(String),
 
-    Keyword(Keyword),
     Ident(String),
     Int(usize),
     Float(f64),
@@ -50,6 +49,20 @@ pub enum Token {
     BracketR,
     ChevronL,
     ChevronR,
+
+    Global,
+    Vars,
+    Lists,
+    Broadcasts,
+    Costumes,
+    Sounds,
+
+    Img(ImgType),
+    Audio(AudioType),
+
+    Repeat,
+    If,
+    Else,
 }
 
 impl Token {
@@ -66,45 +79,117 @@ impl Token {
             span: Span::single(pos),
         }
     }
-}
 
-impl std::fmt::Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    pub fn is_header(&self) -> bool {
+        use Token::*;
+
         match *self {
-            Token::Eof => write!(f, "EOF"),
-            Token::Comment(_) => write!(f, "comment"),
-            Token::MetaComment(_) => write!(f, "meta comment"),
-            Token::Keyword(kw) => write!(f, "{kw}"),
-            Token::Ident(_) => write!(f, "identifier"),
-            Token::Int(_) => write!(f, "integer"),
-            Token::Float(_) => write!(f, "float"),
-            Token::Str(_) => write!(f, "string"),
-            Token::Plus => write!(f, "+"),
-            Token::Minus => write!(f, "-"),
-            Token::Equal => write!(f, "="),
-            Token::Comma => write!(f, ","),
-            Token::Slash => write!(f, "/"),
-            Token::Asterisk => write!(f, "*"),
-            Token::Colon => write!(f, ":"),
-            Token::DoubleColon => write!(f, "::"),
-            Token::Semicolon => write!(f, ";"),
-            Token::Arrow => write!(f, "->"),
-            Token::ParenL => write!(f, "("),
-            Token::ParenR => write!(f, ")"),
-            Token::CurlyL => write!(f, "{{"),
-            Token::CurlyR => write!(f, "}}"),
-            Token::BracketL => write!(f, "["),
-            Token::BracketR => write!(f, "]"),
-            Token::ChevronL => write!(f, "<"),
-            Token::ChevronR => write!(f, ">"),
+            Global | Vars | Lists | Broadcasts | Costumes | Sounds => true,
+            _ => false,
+        }
+    }
+
+    pub fn try_to_inner_string(self) -> Option<String> {
+        match self {
+            Token::Comment(str) => Some(str),
+            Token::MetaComment(str) => Some(str),
+            Token::Ident(str) => Some(str),
+            Token::Str(str) => Some(str),
+            _ => None,
+        }
+    }
+
+    pub fn try_to_inner_img_type(self) -> Option<ImgType> {
+        if let Token::Img(img_type) = self {
+            Some(img_type)
+        } else {
+            None
+        }
+    }
+
+    pub fn try_to_inner_audio_type(self) -> Option<AudioType> {
+        if let Token::Audio(audio_type) = self {
+            Some(audio_type)
+        } else {
+            None
+        }
+    }
+
+    pub fn kind(&self) -> TokenKind {
+        match *self {
+            Token::Eof => TokenKind::Eof,
+            Token::Comment(_) => TokenKind::Comment,
+            Token::MetaComment(_) => TokenKind::MetaComment,
+            Token::Ident(_) => TokenKind::Ident,
+            Token::Int(_) => TokenKind::Int,
+            Token::Float(_) => TokenKind::Float,
+            Token::Str(_) => TokenKind::Str,
+            Token::Plus => TokenKind::Plus,
+            Token::Minus => TokenKind::Minus,
+            Token::Equal => TokenKind::Equal,
+            Token::Comma => TokenKind::Comma,
+            Token::Slash => TokenKind::Slash,
+            Token::Asterisk => TokenKind::Asterisk,
+            Token::Colon => TokenKind::Colon,
+            Token::DoubleColon => TokenKind::DoubleColon,
+            Token::Semicolon => TokenKind::Semicolon,
+            Token::Arrow => TokenKind::Arrow,
+            Token::ParenL => TokenKind::ParenL,
+            Token::ParenR => TokenKind::ParenR,
+            Token::CurlyL => TokenKind::CurlyL,
+            Token::CurlyR => TokenKind::CurlyR,
+            Token::BracketL => TokenKind::BracketL,
+            Token::BracketR => TokenKind::BracketR,
+            Token::ChevronL => TokenKind::ChevronL,
+            Token::ChevronR => TokenKind::ChevronR,
+            Token::Global => TokenKind::Global,
+            Token::Vars => TokenKind::Vars,
+            Token::Lists => TokenKind::Lists,
+            Token::Broadcasts => TokenKind::Broadcasts,
+            Token::Costumes => TokenKind::Costumes,
+            Token::Sounds => TokenKind::Sounds,
+            Token::Img(_) => TokenKind::ImgType,
+            Token::Audio(_) => TokenKind::AudioType,
+            Token::Repeat => TokenKind::Repeat,
+            Token::If => TokenKind::If,
+            Token::Else => TokenKind::Else,
         }
     }
 }
 
-/// A keyword of the language
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Keyword {
-    // headers
+/// The kind of a [Token] without the payload
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TokenKind {
+    Eof,
+
+    Comment,
+    MetaComment,
+
+    Ident,
+    Int,
+    Float,
+    Str,
+
+    Plus,
+    Minus,
+    Equal,
+    Comma,
+    Slash,
+    Asterisk,
+    Colon,
+    DoubleColon,
+    Semicolon,
+    Arrow,
+
+    ParenL,
+    ParenR,
+    CurlyL,
+    CurlyR,
+    BracketL,
+    BracketR,
+    ChevronL,
+    ChevronR,
+
     Global,
     Vars,
     Lists,
@@ -112,41 +197,53 @@ pub enum Keyword {
     Costumes,
     Sounds,
 
-    // media types
-    Img(ImgType),
-    Audio(AudioType),
+    ImgType,
+    AudioType,
 
-    // control flow
     Repeat,
     If,
     Else,
 }
 
-impl Keyword {
-    pub fn is_header(&self) -> bool {
-        use Keyword::*;
-
-        match *self {
-            Global | Vars | Lists | Broadcasts | Costumes | Sounds => true,
-            _ => false,
-        }
-    }
-}
-
-impl std::fmt::Display for Keyword {
+impl std::fmt::Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
-            Keyword::Global => write!(f, "global"),
-            Keyword::Vars => write!(f, "vars"),
-            Keyword::Lists => write!(f, "lists"),
-            Keyword::Broadcasts => write!(f, "broadcasts"),
-            Keyword::Costumes => write!(f, "costumes"),
-            Keyword::Sounds => write!(f, "sounds"),
-            Keyword::Img(_) => write!(f, "image type"),
-            Keyword::Audio(_) => write!(f, "audio type"),
-            Keyword::Repeat => write!(f, "repeat"),
-            Keyword::If => write!(f, "if"),
-            Keyword::Else => write!(f, "else"),
+            TokenKind::Eof => write!(f, "EOF"),
+            TokenKind::Comment => write!(f, "comment"),
+            TokenKind::MetaComment => write!(f, "meta comment"),
+            TokenKind::Ident => write!(f, "identifier"),
+            TokenKind::Int => write!(f, "integer"),
+            TokenKind::Float => write!(f, "float"),
+            TokenKind::Str => write!(f, "string"),
+            TokenKind::Plus => write!(f, "+"),
+            TokenKind::Minus => write!(f, "-"),
+            TokenKind::Equal => write!(f, "="),
+            TokenKind::Comma => write!(f, ","),
+            TokenKind::Slash => write!(f, "/"),
+            TokenKind::Asterisk => write!(f, "*"),
+            TokenKind::Colon => write!(f, ":"),
+            TokenKind::DoubleColon => write!(f, "::"),
+            TokenKind::Semicolon => write!(f, ";"),
+            TokenKind::Arrow => write!(f, "->"),
+            TokenKind::ParenL => write!(f, "("),
+            TokenKind::ParenR => write!(f, ")"),
+            TokenKind::CurlyL => write!(f, "{{"),
+            TokenKind::CurlyR => write!(f, "}}"),
+            TokenKind::BracketL => write!(f, "["),
+            TokenKind::BracketR => write!(f, "]"),
+            TokenKind::ChevronL => write!(f, "<"),
+            TokenKind::ChevronR => write!(f, ">"),
+            TokenKind::Global => write!(f, "global"),
+            TokenKind::Vars => write!(f, "vars"),
+            TokenKind::Lists => write!(f, "lists"),
+            TokenKind::Broadcasts => write!(f, "broadcasts"),
+            TokenKind::Costumes => write!(f, "costumes"),
+            TokenKind::Sounds => write!(f, "sounds"),
+            TokenKind::ImgType => write!(f, "image type"),
+            TokenKind::AudioType => write!(f, "audio type"),
+            TokenKind::If => write!(f, "if"),
+            TokenKind::Else => write!(f, "else"),
+            TokenKind::Repeat => write!(f, "repeat"),
         }
     }
 }

@@ -12,7 +12,7 @@ use crate::{
 
 use cursor::Cursor;
 pub use error::LexError;
-pub use token::{Keyword, SpannedToken, Token};
+pub use token::{SpannedToken, Token, TokenKind};
 
 mod cursor;
 mod error;
@@ -155,23 +155,21 @@ impl Cursor<'_> {
 
             // keywords and idents
             c if c.is_ascii_alphabetic() => {
-                use self::token::Keyword::*;
-
                 let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());
                 let kw = match inp.as_str() {
-                    "global" => Keyword(Global),
-                    "vars" => Keyword(Vars),
-                    "lists" => Keyword(Lists),
-                    "broadcasts" => Keyword(Broadcasts),
-                    "costumes" => Keyword(Costumes),
-                    "sounds" => Keyword(Sounds),
-                    "SVG" => Keyword(Img(ImgType::Svg)),
-                    "PNG" => Keyword(Img(ImgType::Png)),
-                    "WAV" => Keyword(Audio(AudioType::Wav)),
-                    "MP4" => Keyword(Audio(AudioType::Mp4)),
-                    "repeat" => Keyword(Repeat),
-                    "if" => Keyword(If),
-                    "else" => Keyword(Else),
+                    "global" => Global,
+                    "vars" => Vars,
+                    "lists" => Lists,
+                    "broadcasts" => Broadcasts,
+                    "costumes" => Costumes,
+                    "sounds" => Sounds,
+                    "SVG" => Img(ImgType::Svg),
+                    "PNG" => Img(ImgType::Png),
+                    "WAV" => Audio(AudioType::Wav),
+                    "MP4" => Audio(AudioType::Mp4),
+                    "repeat" => Repeat,
+                    "if" => If,
+                    "else" => Else,
                     _ => Ident(inp),
                 };
 
@@ -224,19 +222,17 @@ mod tests {
 
     #[test]
     fn keyword_tokenization() {
-        use Keyword::*;
-
         let input = "global vars lists broadcasts foo costumes if";
         assert_eq!(
             tokenize(input).unwrap(),
             vec![
-                Token::Keyword(Global),
-                Token::Keyword(Vars),
-                Token::Keyword(Lists),
-                Token::Keyword(Broadcasts),
+                Token::Global,
+                Token::Vars,
+                Token::Lists,
+                Token::Broadcasts,
                 Token::Ident(String::from("foo")),
-                Token::Keyword(Costumes),
-                Token::Keyword(If),
+                Token::Costumes,
+                Token::If,
                 Token::Eof,
             ]
         );
