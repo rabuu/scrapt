@@ -6,7 +6,6 @@ use crate::parse::{expect_token, is_next_token, ParseError};
 
 #[derive(Debug)]
 pub struct Costume {
-    current: bool,
     img_type: ImgType,
     path: String,
 }
@@ -31,9 +30,9 @@ pub fn parse_costumes_header(
     Ok(())
 }
 
-pub fn parse_costume(
+fn parse_costume(
     tokens: &mut Peekable<impl Iterator<Item = SpannedToken>>,
-) -> Result<Costume, ParseError> {
+) -> Result<(String, Costume, bool), ParseError> {
     // check for *
     let current = is_next_token(tokens, TokenKind::Asterisk);
     if current {
@@ -55,11 +54,8 @@ pub fn parse_costume(
     // return if terminated
     if is_next_token(tokens, TokenKind::Semicolon) {
         let _ = tokens.next();
-        return Ok(Costume {
-            current,
-            img_type,
-            path: format!("{costume_name}.{}", img_type.file_extension()),
-        });
+        let path = format!("{costume_name}.{}", img_type.file_extension());
+        return Ok((costume_name, Costume { img_type, path }, current));
     }
 
     expect_token(tokens, TokenKind::Equal)?;
@@ -71,9 +67,5 @@ pub fn parse_costume(
 
     expect_token(tokens, TokenKind::Semicolon)?;
 
-    Ok(Costume {
-        current,
-        img_type,
-        path,
-    })
+    Ok((costume_name, Costume { img_type, path }, current))
 }
