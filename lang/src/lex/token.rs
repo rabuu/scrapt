@@ -82,11 +82,10 @@ impl Token {
 
     pub fn is_header(&self) -> bool {
         use Token::*;
-
-        match *self {
-            Global | Vars | Lists | Broadcasts | Costumes | Sounds => true,
-            _ => false,
-        }
+        matches!(
+            *self,
+            Global | Vars | Lists | Broadcasts | Costumes | Sounds
+        )
     }
 
     pub fn try_to_inner_string(self) -> Option<String> {
