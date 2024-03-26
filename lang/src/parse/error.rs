@@ -13,4 +13,10 @@ pub enum ParseError {
         got: lex::Token,
         span: span::Span,
     },
+
+    #[error("duplicate definition of header value `{value}` at {span}")]
+    DuplicateHeaderValue { value: String, span: span::Span },
+
+    #[error("duplicate selection using * at {span}")]
+    DuplicateSelection { span: span::Span },
 }
