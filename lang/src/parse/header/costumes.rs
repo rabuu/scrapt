@@ -2,7 +2,8 @@ use std::iter::Peekable;
 
 use crate::lex::{SpannedToken, TokenKind};
 use crate::media_type::ImgType;
-use crate::parse::{expect_token, is_next_token, ParseError};
+use crate::parse::util::{expect_token, is_next_token};
+use crate::parse::ParseError;
 use crate::span::Span;
 
 use super::registry::HeaderRegistry;
