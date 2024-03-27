@@ -89,3 +89,27 @@ fn parse_costume(
 
     Ok((costume_name, name_span, Costume { img_type, path }, current))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::lex;
+
+    #[test]
+    fn valid_costumes_header() {
+        let toks = lex::tokenize(r#"costumes { backdrop1: SVG; *bd2: PNG = "foo.PNG"; }"#).unwrap();
+        let mut costumes_db = HashMap::new();
+        let mut costumes_list = Vec::new();
+        let mut current_costume = None;
+
+        parse_costumes_header(
+            &mut toks.into_iter().peekable(),
+            &mut costumes_db,
+            &mut costumes_list,
+            &mut current_costume,
+        )
+        .unwrap();
+
+        // TODO: verify results
+    }
+}
