@@ -25,7 +25,7 @@ where
                 &mut registry.current_costume,
             )?;
         }
-        _ => (),
+        _ => return Err(ParseError::Generic),
     }
 
     Ok(())

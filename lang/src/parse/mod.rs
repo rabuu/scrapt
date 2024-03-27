@@ -1,7 +1,8 @@
 use std::iter::Peekable;
 
-use crate::lex::SpannedToken;
+use tracing::trace;
 
+use crate::lex::SpannedToken;
 pub use error::ParseError;
 pub use header::HeaderRegistry;
 
@@ -18,11 +19,12 @@ pub fn parse_target(
 
     while let Some(tok) = tokens.peek().map(|tok| &tok.inner) {
         if !tok.is_header() {
-            return Ok(header_registry);
+            break;
         }
 
         header::parse_header(&mut tokens, &mut header_registry)?;
     }
 
+    trace!("Successfully parsed target.");
     Ok(header_registry)
 }
