@@ -33,7 +33,7 @@ fn build(project_path: PathBuf, manifest_path: PathBuf) -> Result<()> {
     let stage = fs::read_to_string(project_path.join("stage.scr")).unwrap();
 
     let stage_tokens = lang::lex::tokenize(stage)?;
-    lang::parse::parse_tokens(stage_tokens)?;
+    lang::parse::parse_target(stage_tokens)?;
 
     Ok(())
 }
