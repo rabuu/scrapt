@@ -10,13 +10,12 @@ fn main() -> anyhow::Result<()> {
     match cli.cmd {
         cli::Cmd::Build(args) => {
             let project_path = args.project_path;
-            let manifest_path = args
-                .manifest_path
-                .unwrap_or(project_path.join("project.toml"));
+            let manifest_path = args.manifest.unwrap_or(project_path.join("project.toml"));
 
             build::build(project_path, manifest_path)?;
         }
         cli::Cmd::Generate(_) => anyhow::bail!("not yet implemented"),
+        cli::Cmd::New(_) => anyhow::bail!("not yet implemented"),
     }
 
     Ok(())
