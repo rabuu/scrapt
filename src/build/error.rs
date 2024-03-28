@@ -10,4 +10,13 @@ pub enum BuildError {
 
     #[error("parsing unsuccessful")]
     ParseError(#[from] ParseError),
+
+    #[error("problems regarding file system")]
+    IoError(#[from] std::io::Error),
+
+    #[error("failed creating the ZIP archive")]
+    ZipError(#[from] zip::result::ZipError),
+
+    #[error("couldn't parse TOML manifest")]
+    TomlError(#[from] manifest_scrapt::TomlDeserializationError),
 }

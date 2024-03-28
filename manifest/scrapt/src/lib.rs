@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+pub use toml::de::Error as TomlDeserializationError;
 
 use manifest_common::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {
-    project: Project,
+    pub project: Project,
     #[serde(default)]
     sprites: HashMap<String, String>,
     #[serde(default)]
@@ -16,11 +17,8 @@ pub struct Manifest {
 }
 
 impl Manifest {
-    pub fn parse(input: &str) -> Result<Manifest, String> {
-        match toml::from_str(input) {
-            Ok(m) => Ok(m),
-            Err(err) => Err(format!("{}", err)),
-        }
+    pub fn parse(input: &str) -> Result<Manifest, TomlDeserializationError> {
+        toml::from_str(input)
     }
 
     pub fn to_toml(&self) -> String {
@@ -29,10 +27,10 @@ impl Manifest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Project {
-    name: String,
+pub struct Project {
+    pub name: String,
     #[serde(default)]
-    extensions: Vec<Extension>,
+    pub extensions: Vec<Extension>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
