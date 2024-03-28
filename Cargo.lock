@@ -270,6 +270,7 @@ dependencies = [
  "lang",
  "manifest_scrapt",
  "manifest_scratch",
+ "thiserror",
  "tracing",
  "tracing-subscriber",
 ]
