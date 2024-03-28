@@ -37,6 +37,10 @@ pub struct BuildArgs {
     /// Path to a custom manifest (project.toml) location
     #[arg(short, long)]
     pub manifest: Option<PathBuf>,
+
+    /// Don't zip the built Scratch project
+    #[arg(long)]
+    pub no_zip: bool,
 }
 
 #[derive(Args, Debug)]
