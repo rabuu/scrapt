@@ -3,8 +3,6 @@
 //! This module contains the lexing logic of the language.
 //! The main way of interacting with the lexer is using the [tokenize] function.
 
-use tracing::trace;
-
 use crate::{
     media_type::{AudioType, ImgType},
     span::Span,
@@ -26,6 +24,8 @@ mod token;
 /// # Errors
 /// The function returns only the *first* [LexError].
 pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<SpannedToken>, LexError> {
+    tracing::debug!("Start tokenizing...");
+
     let mut cursor = Cursor::new(source.as_ref());
     let mut tokens = Vec::new();
 
@@ -39,7 +39,7 @@ pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<SpannedToken>, LexError> 
         }
     }
 
-    trace!("Successfully tokenized file");
+    tracing::debug!("Successfully tokenized file");
     Ok(tokens)
 }
 
