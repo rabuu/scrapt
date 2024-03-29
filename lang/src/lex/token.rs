@@ -154,6 +154,25 @@ impl Token {
             Token::Else => TokenKind::Else,
         }
     }
+
+    pub fn matches(&self, other: TokenKind) -> bool {
+        use TokenKind::*;
+
+        if self.kind() == other {
+            return true;
+        }
+
+        if other == Header
+            && matches!(
+                self.kind(),
+                Global | Vars | Lists | Broadcasts | Costumes | Sounds
+            )
+        {
+            return true;
+        }
+
+        false
+    }
 }
 
 /// The kind of a [Token] without the payload
@@ -189,6 +208,7 @@ pub enum TokenKind {
     ChevronL,
     ChevronR,
 
+    Header,
     Global,
     Vars,
     Lists,
@@ -206,8 +226,8 @@ pub enum TokenKind {
 
 impl std::fmt::Display for TokenKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match *self {
-            TokenKind::Eof => write!(f, "EOF"),
+        match self {
+            TokenKind::Eof => write!(f, "end of file"),
             TokenKind::Comment => write!(f, "comment"),
             TokenKind::MetaComment => write!(f, "meta comment"),
             TokenKind::Ident => write!(f, "identifier"),
@@ -232,14 +252,15 @@ impl std::fmt::Display for TokenKind {
             TokenKind::BracketR => write!(f, "]"),
             TokenKind::ChevronL => write!(f, "<"),
             TokenKind::ChevronR => write!(f, ">"),
+            TokenKind::Header => write!(f, "a Header"),
             TokenKind::Global => write!(f, "global"),
             TokenKind::Vars => write!(f, "vars"),
             TokenKind::Lists => write!(f, "lists"),
             TokenKind::Broadcasts => write!(f, "broadcasts"),
             TokenKind::Costumes => write!(f, "costumes"),
             TokenKind::Sounds => write!(f, "sounds"),
-            TokenKind::ImgType => write!(f, "image type"),
-            TokenKind::AudioType => write!(f, "audio type"),
+            TokenKind::ImgType => write!(f, "Image type"),
+            TokenKind::AudioType => write!(f, "Audio type"),
             TokenKind::If => write!(f, "if"),
             TokenKind::Else => write!(f, "else"),
             TokenKind::Repeat => write!(f, "repeat"),

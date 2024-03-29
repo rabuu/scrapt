@@ -19,7 +19,6 @@ pub fn parse_costumes_header(
     costumes_list: &mut Vec<String>,
     current_costume: &mut Option<usize>,
 ) -> Result<(), ParseError> {
-    expect_token(tokens, TokenKind::Costumes)?;
     expect_token(tokens, TokenKind::CurlyL)?;
 
     loop {
@@ -97,7 +96,7 @@ mod tests {
 
     #[test]
     fn valid_costumes_header() {
-        let toks = lex::tokenize(r#"costumes { backdrop1: SVG; *bd2: PNG = "foo.PNG"; }"#).unwrap();
+        let toks = lex::tokenize(r#"{ backdrop1: SVG; *bd2: PNG = "foo.PNG"; }"#).unwrap();
         let mut costumes_db = HashMap::new();
         let mut costumes_list = Vec::new();
         let mut current_costume = None;

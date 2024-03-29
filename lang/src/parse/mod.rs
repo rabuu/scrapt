@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 
-use crate::lex::SpannedToken;
+use crate::lex::{SpannedToken, TokenKind};
 pub use error::ParseError;
 pub use header::HeaderRegistry;
 
@@ -16,8 +16,8 @@ pub fn parse_target(
     let mut tokens: Peekable<_> = tokens.into_iter().peekable();
     let mut header_registry = HeaderRegistry::default();
 
-    while let Some(tok) = tokens.peek().map(|tok| &tok.inner) {
-        if !tok.is_header() {
+    loop {
+        if util::is_next_token(&mut tokens, TokenKind::Eof) {
             break;
         }
 

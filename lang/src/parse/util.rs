@@ -11,7 +11,7 @@ pub fn expect_token(
         return Err(ParseError::ExpectedTokenButEnd { expected });
     };
 
-    if tok.inner.kind() != expected {
+    if !tok.inner.matches(expected) {
         return Err(ParseError::ExpectedAnotherToken {
             expected,
             got: tok.inner,
@@ -26,5 +26,9 @@ pub fn is_next_token(
     tokens: &mut Peekable<impl Iterator<Item = SpannedToken>>,
     token_kind: TokenKind,
 ) -> bool {
-    tokens.peek().map(|t| t.inner.kind()) == Some(token_kind)
+    if let Some(tok) = tokens.peek() {
+        tok.inner.matches(token_kind)
+    } else {
+        false
+    }
 }

@@ -5,9 +5,6 @@ use crate::span::Span;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
-    #[error("parsing failed")]
-    Generic,
-
     #[error("expected token `{expected}` but parsing ended")]
     ExpectedTokenButEnd { expected: TokenKind },
 
