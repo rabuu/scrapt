@@ -39,7 +39,7 @@ pub fn tokenize(source: impl AsRef<str>) -> Result<Vec<SpannedToken>, LexError> 
         }
     }
 
-    tracing::debug!("Successfully tokenized file");
+    tracing::debug!("Successfully tokenized file.");
     Ok(tokens)
 }
 

@@ -14,7 +14,7 @@ pub fn build(
     output_file: Option<PathBuf>,
     no_zip: bool,
 ) -> Result<(), BuildError> {
-    tracing::debug!("Building...");
+    tracing::info!("Building...");
 
     let manifest_path = manifest_path.unwrap_or(project_path.join("project.toml"));
 
@@ -38,7 +38,7 @@ pub fn build(
     let stage_path = project_path.join("stage.scr");
     let stage = fs::read_to_string(&stage_path).unwrap();
 
-    tracing::info!("Handle {:?}...", stage_path);
+    tracing::debug!("Handle {:?}...", stage_path);
     let stage_tokens = lang::lex::tokenize(stage)?;
     let _header_reg = lang::parse::parse_target(stage_tokens)?;
 
