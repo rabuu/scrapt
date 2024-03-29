@@ -5,6 +5,9 @@ use lang::parse::ParseError;
 
 #[derive(Debug, Error)]
 pub enum BuildError {
+    #[error("path `{0}` couldn't be handled")]
+    StrangePath(std::path::PathBuf),
+
     #[error("lexing unsuccessful")]
     LexError(#[from] LexError),
 
