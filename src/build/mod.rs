@@ -4,8 +4,11 @@ use std::path::PathBuf;
 use manifest_scrapt::Manifest as ScraptManifest;
 
 pub use error::BuildError;
+
+use crate::build::asset::Asset;
 mod error;
 
+mod asset;
 mod write;
 
 pub fn build(
@@ -33,21 +36,34 @@ pub fn build(
         f
     });
 
-    let _manifest = ScraptManifest::parse(&fs::read_to_string(manifest_path)?)?;
+    let manifest = ScraptManifest::parse(&fs::read_to_string(manifest_path)?)?;
 
     let stage_path = project_path.join("stage.scr");
     let stage = fs::read_to_string(&stage_path).unwrap();
 
     tracing::debug!("Handle {:?}...", stage_path);
     let stage_tokens = lang::lex::tokenize(stage)?;
-    let _header_reg = lang::parse::parse_target(stage_tokens)?;
+    let header_reg = lang::parse::parse_target(stage_tokens)?;
 
-    let assets: Vec<PathBuf> = vec![];
+    let mut assets = Vec::new();
+
+    for costume in header_reg.costumes.values() {
+        let path = project_path
+            .join(&manifest.assets.directory)
+            .join(&costume.path);
+
+        if !path.is_file() {
+            return Err(BuildError::NoValidFileAt(path));
+        }
+
+        let asset = Asset::new(path)?;
+        assets.push(asset);
+    }
 
     if no_zip {
-        write::write_to_dir(output_file, &assets)?;
+        write::write_to_dir(output_file, &assets, manifest.assets.auto_renaming)?;
     } else {
-        write::write_to_zip(output_file, &assets)?;
+        write::write_to_zip(output_file, &assets, manifest.assets.auto_renaming)?;
     }
 
     Ok(())

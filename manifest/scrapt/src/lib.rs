@@ -9,11 +9,11 @@ use manifest_common::*;
 pub struct Manifest {
     pub project: Project,
     #[serde(default)]
-    sprites: HashMap<String, String>,
+    pub sprites: HashMap<String, String>,
     #[serde(default)]
-    assets: Assets,
+    pub assets: Assets,
     #[serde(default)]
-    meta: Metadata,
+    pub meta: Metadata,
 }
 
 impl Manifest {
@@ -34,11 +34,11 @@ pub struct Project {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Assets {
+pub struct Assets {
     #[serde(default = "default_assets_dir")]
-    directory: String,
+    pub directory: String,
     #[serde(default = "default_auto_renaming")]
-    auto_renaming: bool,
+    pub auto_renaming: bool,
 }
 
 impl Default for Assets {

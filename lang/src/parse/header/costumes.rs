@@ -9,8 +9,8 @@ use crate::span::Span;
 
 #[derive(Debug)]
 pub struct Costume {
-    img_type: ImgType,
-    path: String,
+    pub img_type: ImgType,
+    pub path: String,
 }
 
 pub fn parse_costumes_header(
