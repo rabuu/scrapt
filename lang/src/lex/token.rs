@@ -60,6 +60,8 @@ pub enum Token {
     Img(ImgType),
     Audio(AudioType),
 
+    Def,
+
     Repeat,
     If,
     Else,
@@ -149,6 +151,7 @@ impl Token {
             Token::Sounds => TokenKind::Sounds,
             Token::Img(_) => TokenKind::ImgType,
             Token::Audio(_) => TokenKind::AudioType,
+            Token::Def => TokenKind::Def,
             Token::Repeat => TokenKind::Repeat,
             Token::If => TokenKind::If,
             Token::Else => TokenKind::Else,
@@ -219,6 +222,8 @@ pub enum TokenKind {
     ImgType,
     AudioType,
 
+    Def,
+
     Repeat,
     If,
     Else,
@@ -261,6 +266,7 @@ impl std::fmt::Display for TokenKind {
             TokenKind::Sounds => write!(f, "sounds"),
             TokenKind::ImgType => write!(f, "Image type"),
             TokenKind::AudioType => write!(f, "Audio type"),
+            TokenKind::Def => write!(f, "def"),
             TokenKind::If => write!(f, "if"),
             TokenKind::Else => write!(f, "else"),
             TokenKind::Repeat => write!(f, "repeat"),

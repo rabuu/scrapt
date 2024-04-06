@@ -166,6 +166,7 @@ impl Cursor<'_> {
                     "PNG" => Img(ImgType::Png),
                     "WAV" => Audio(AudioType::Wav),
                     "MP4" => Audio(AudioType::Mp4),
+                    "def" => Def,
                     "repeat" => Repeat,
                     "if" => If,
                     "else" => Else,
@@ -221,7 +222,7 @@ mod tests {
 
     #[test]
     fn keyword_tokenization() {
-        let input = "global vars lists broadcasts foo costumes if";
+        let input = "global vars lists broadcasts foo costumes if def";
         assert_eq!(
             tokenize(input).unwrap(),
             vec![
@@ -232,6 +233,7 @@ mod tests {
                 Token::Ident(String::from("foo")),
                 Token::Costumes,
                 Token::If,
+                Token::Def,
                 Token::Eof,
             ]
         );
