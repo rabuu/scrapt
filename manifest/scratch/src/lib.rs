@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub use manifest_common::{Extension, Metadata};
+pub use target::{Asset, Target};
 
 mod block;
 mod common;

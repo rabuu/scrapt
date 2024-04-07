@@ -5,7 +5,7 @@ use md5::{Digest, Md5};
 
 use super::BuildError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Asset {
     pub path: PathBuf,
     pub hash: String,

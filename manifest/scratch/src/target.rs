@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::block::Block;
-use crate::common::*;
+use crate::common::{self, *};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,6 +23,12 @@ pub struct Target {
 
     #[serde(flatten)]
     pub target_type: TargetType,
+}
+
+impl Target {
+    pub fn stage_builder() -> builder::StageBuilder {
+        builder::StageBuilder::default()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -85,6 +91,24 @@ pub struct Asset {
 
     #[serde(flatten)]
     pub asset_type: AssetType,
+}
+
+impl Asset {
+    pub fn costume(id: AssetId, name: Name, filename: String, data_format: String) -> Asset {
+        Asset {
+            asset_id: id,
+            name,
+            md5ext: filename,
+            data_format,
+
+            // TODO
+            asset_type: AssetType::Costume(CostumeAsset {
+                bitmap_resolution: None,
+                rotation_center_x: common::Number::Int(240),
+                rotation_center_y: common::Number::Int(180),
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -154,4 +178,90 @@ pub enum RotationStyle {
     LeftRight,
     #[serde(rename = "don't rotate")]
     DontRotate,
+}
+
+mod builder {
+    use super::*;
+
+    #[derive(Debug)]
+    pub struct StageBuilder {
+        variables: HashMap<Id, Variable>,
+        lists: HashMap<Id, List>,
+        broadcasts: HashMap<Id, Broadcast>,
+        blocks: HashMap<Id, Block>,
+        comments: HashMap<Id, Comment>,
+        current_costume: Option<u32>,
+        costumes: Vec<Asset>,
+        sounds: Vec<Asset>,
+        layer_order: u32,
+        volume: Percentage,
+        tempo: u32,
+        video_state: VideoState,
+        video_transparency: Percentage,
+        text_to_speech_language: Option<Language>,
+    }
+
+    impl Default for StageBuilder {
+        fn default() -> Self {
+            Self {
+                variables: Default::default(),
+                lists: Default::default(),
+                broadcasts: Default::default(),
+                blocks: Default::default(),
+                comments: Default::default(),
+                current_costume: None,
+                costumes: Default::default(),
+                sounds: Default::default(),
+                layer_order: 0,
+                volume: 100,
+                tempo: 60,
+                video_state: VideoState::On,
+                video_transparency: 50,
+                text_to_speech_language: None,
+            }
+        }
+    }
+
+    impl StageBuilder {
+        pub fn volume(mut self, volume: Percentage) -> StageBuilder {
+            self.volume = volume;
+            self
+        }
+
+        pub fn add_costume(mut self, costume: Asset) -> StageBuilder {
+            self.costumes.push(costume);
+            self
+        }
+
+        pub fn build(mut self) -> Target {
+            if self.current_costume.is_none() && !self.costumes.is_empty() {
+                self.current_costume = Some(0);
+            }
+
+            assert!(self.current_costume.is_some());
+
+            let stage = StageTarget {
+                tempo: self.tempo,
+                video_state: self.video_state,
+                video_transparency: self.video_transparency,
+                text_to_speech_language: self.text_to_speech_language,
+            };
+
+            Target {
+                is_stage: true,
+                name: Name::from("Stage"),
+                variables: self.variables,
+                lists: self.lists,
+                broadcasts: self.broadcasts,
+                blocks: self.blocks,
+                comments: self.comments,
+                current_costume: self.current_costume.unwrap_or(0),
+                costumes: self.costumes,
+                sounds: self.sounds,
+                layer_order: self.layer_order,
+                volume: self.volume,
+                target_type: TargetType::Stage(stage),
+            }
+        }
+    }
 }
