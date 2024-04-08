@@ -19,6 +19,8 @@ pub fn build(
 ) -> Result<(), BuildError> {
     tracing::info!("Building...");
 
+    let project_path = project_path.canonicalize()?;
+
     let manifest_path = manifest_path.unwrap_or(project_path.join("project.toml"));
     let manifest_scrapt = ScraptManifest::parse(&fs::read_to_string(manifest_path)?)?;
 

@@ -13,6 +13,7 @@ pub struct Asset {
 
 impl Asset {
     pub fn new(path: PathBuf) -> std::io::Result<Self> {
+        let path = path.canonicalize()?;
         let buf = fs::read(&path)?;
 
         let mut md5_hasher = Md5::new();
@@ -36,9 +37,9 @@ impl Asset {
         } else {
             self.path
                 .file_name()
-                .ok_or(BuildError::StrangePath(self.path.clone()))?
+                .ok_or_else(|| BuildError::StrangePath(self.path.clone()))?
                 .to_str()
-                .ok_or(BuildError::StrangePath(self.path.clone()))?
+                .ok_or_else(|| BuildError::StrangePath(self.path.clone()))?
                 .to_string()
         })
     }
