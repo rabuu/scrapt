@@ -47,4 +47,7 @@ pub struct BuildArgs {
 pub struct GenerateArgs;
 
 #[derive(Args, Debug)]
-pub struct NewArgs;
+pub struct NewArgs {
+    /// Path of the new project
+    pub path: PathBuf,
+}

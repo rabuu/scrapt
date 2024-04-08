@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use scrapt::{build, cli};
+use scrapt::{build, cli, new};
 
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
@@ -12,7 +12,7 @@ fn main() -> anyhow::Result<()> {
             build::build(args.project_path, args.manifest, args.output, args.no_zip)?
         }
         cli::Cmd::Generate(_) => unimplemented!(),
-        cli::Cmd::New(_) => unimplemented!(),
+        cli::Cmd::New(args) => new::new(args.path)?,
     }
 
     Ok(())
