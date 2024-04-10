@@ -10,7 +10,6 @@ members = [
     "manifest/common",
     "manifest/scratch",
     "manifest/scrapt",
-
     "lang",
 ]
 
