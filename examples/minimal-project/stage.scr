@@ -1,1 +1,5 @@
-costumes { backdrop1: SVG; }
+costumes {
+    backdrop1: SVG;
+	gh: PNG;
+	*gha: PNG = "gh.png";
+}

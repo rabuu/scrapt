@@ -49,7 +49,12 @@ pub fn build(
     let mut s_builder = manifest_scratch::Target::stage_builder();
     let mut assets = Vec::new();
 
-    for (name, costume) in header_reg.costumes.iter() {
+    for name in &header_reg.costumes_list {
+        let costume = header_reg
+            .costumes
+            .get(name)
+            .expect("costume in list is also in db");
+
         let path = project_path
             .join(&manifest_scrapt.assets.directory)
             .join(&costume.path);
@@ -60,7 +65,6 @@ pub fn build(
 
         let asset = Asset::new(path)?;
         assets.push(asset.clone());
-
         s_builder = s_builder.add_costume(manifest_scratch::Asset::costume(
             asset.hash.clone(),
             name.clone(),
@@ -69,7 +73,10 @@ pub fn build(
         ));
     }
 
-    let stage = s_builder.volume(99).build();
+    let stage = s_builder
+        .volume(99)
+        .current_costume(header_reg.current_costume)
+        .build();
 
     let scratch_project = manifest_scratch::Manifest::builder(stage).build();
 

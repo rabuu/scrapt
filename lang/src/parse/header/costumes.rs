@@ -17,7 +17,7 @@ pub fn parse_costumes_header(
     tokens: &mut Peekable<impl Iterator<Item = SpannedToken>>,
     costumes_db: &mut HashMap<String, Costume>,
     costumes_list: &mut Vec<String>,
-    current_costume: &mut Option<usize>,
+    current_costume: &mut Option<u32>,
 ) -> Result<(), ParseError> {
     expect_token(tokens, TokenKind::CurlyL)?;
 
@@ -39,7 +39,7 @@ pub fn parse_costumes_header(
             if current_costume.is_some() {
                 return Err(ParseError::DuplicateSelection { span });
             }
-            *current_costume = Some(costumes_list.len() - 1);
+            *current_costume = Some(costumes_list.len() as u32 - 1);
         }
     }
 

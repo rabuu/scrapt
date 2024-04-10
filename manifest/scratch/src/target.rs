@@ -233,6 +233,11 @@ mod builder {
             self
         }
 
+        pub fn current_costume(mut self, index: Option<u32>) -> StageBuilder {
+            self.current_costume = index;
+            self
+        }
+
         pub fn build(mut self) -> Target {
             if self.current_costume.is_none() && !self.costumes.is_empty() {
                 self.current_costume = Some(0);

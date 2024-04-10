@@ -6,5 +6,5 @@ use super::costumes::Costume;
 pub struct HeaderRegistry {
     pub costumes: HashMap<String, Costume>,
     pub costumes_list: Vec<String>,
-    pub current_costume: Option<usize>,
+    pub current_costume: Option<u32>,
 }
