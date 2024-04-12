@@ -39,7 +39,7 @@ pub struct BuildArgs {
     pub manifest: Option<PathBuf>,
 
     /// Don't zip the built Scratch project
-    #[arg(long)]
+    #[arg(long, short = 'Z')]
     pub no_zip: bool,
 }
 
