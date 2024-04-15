@@ -73,6 +73,30 @@ pub fn build(
         ));
     }
 
+    for name in &header_reg.sounds_list {
+        let sound = header_reg
+            .sounds
+            .get(name)
+            .expect("sound in list is also in db");
+
+        let path = project_path
+            .join(&manifest_scrapt.assets.directory)
+            .join(&sound.path);
+
+        if !path.is_file() {
+            return Err(BuildError::NoValidFileAt(path));
+        }
+
+        let asset = Asset::new(path)?;
+        assets.push(asset.clone());
+        s_builder = s_builder.add_sound(manifest_scratch::Asset::sound(
+            asset.hash.clone(),
+            name.clone(),
+            asset.filename(manifest_scrapt.assets.auto_renaming)?,
+            sound.audio_type.file_extension().to_string(),
+        ));
+    }
+
     let stage = s_builder
         .volume(99)
         .current_costume(header_reg.current_costume)

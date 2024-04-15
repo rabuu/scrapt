@@ -8,6 +8,7 @@ pub use registry::HeaderRegistry;
 
 mod costumes;
 mod registry;
+mod sounds;
 
 pub fn parse_header<T>(
     tokens: &mut Peekable<T>,
@@ -18,7 +19,6 @@ where
 {
     let header = expect_token(tokens, TokenKind::Header)?;
 
-    #[allow(clippy::single_match)]
     match header.inner {
         Token::Costumes => costumes::parse_costumes_header(
             tokens,
@@ -26,6 +26,9 @@ where
             &mut registry.costumes_list,
             &mut registry.current_costume,
         )?,
+        Token::Sounds => {
+            sounds::parse_sounds_header(tokens, &mut registry.sounds, &mut registry.sounds_list)?
+        }
         _ => (),
     }
 

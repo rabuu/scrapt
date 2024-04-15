@@ -109,6 +109,22 @@ impl Asset {
             }),
         }
     }
+
+    pub fn sound(id: AssetId, name: Name, filename: String, data_format: String) -> Asset {
+        Asset {
+            asset_id: id,
+            name,
+            md5ext: filename,
+            data_format,
+
+            // TODO
+            // FIXME
+            asset_type: AssetType::Sound(SoundAsset {
+                rate: 42.0,
+                sample_count: 1,
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -235,6 +251,11 @@ mod builder {
 
         pub fn current_costume(mut self, index: Option<u32>) -> StageBuilder {
             self.current_costume = index;
+            self
+        }
+
+        pub fn add_sound(mut self, sound: Asset) -> StageBuilder {
+            self.sounds.push(sound);
             self
         }
 
