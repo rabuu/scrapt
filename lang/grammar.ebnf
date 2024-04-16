@@ -1,10 +1,10 @@
 PROG = HEAD*
 
-HEAD = GLOBAL_HEAD | VARS_HEAD | LISTS_HEAD | BROADCASTS_HEAD | COSTUMES_HEAD | SOUNDS_HEAD
+HEAD = SET_HEAD | VARS_HEAD | LISTS_HEAD | BROADCASTS_HEAD | COSTUMES_HEAD | SOUNDS_HEAD
 
-GLOBAL_HEAD = "global", "{", GLOBAL_DECL+, "}"
-GLOBAL_DECL = GLOBAL_KEYWORD, "=", value, ";"
-GLOBAL_KEYWORD = "tempo" | "volume" | "videoTransparency" | "videoState"
+SET_HEAD = "set", "{", SET_DECL+, "}"
+SET_DECL = SET_KEY, "=", value, ";"
+SET_KEY = "tempo" | "volume" | "videoTransparency" | "videoState"
 
 VARS_HEAD = "vars", "{", VAR_DECL+, "}"
 VAR_DECL = name, ("=", value)?, ";"

@@ -156,7 +156,7 @@ impl Cursor<'_> {
             c if c.is_ascii_alphabetic() => {
                 let inp = self.eat_with_prev(|c| c.is_ascii_alphanumeric());
                 let kw = match inp.as_str() {
-                    "global" => Global,
+                    "set" => Set,
                     "vars" => Vars,
                     "lists" => Lists,
                     "broadcasts" => Broadcasts,
@@ -222,11 +222,11 @@ mod tests {
 
     #[test]
     fn keyword_tokenization() {
-        let input = "global vars lists broadcasts foo costumes if def";
+        let input = "set vars lists broadcasts foo costumes if def";
         assert_eq!(
             tokenize(input).unwrap(),
             vec![
-                Token::Global,
+                Token::Set,
                 Token::Vars,
                 Token::Lists,
                 Token::Broadcasts,

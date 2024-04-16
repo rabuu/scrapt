@@ -1,4 +1,4 @@
-global {
+set {
     tempo = 60;
     volume = 90;
     videoTransparency = 60;
@@ -10,7 +10,6 @@ vars {
     r#vars;
     baz;
 }
-
 
 lists {
      list1 = [

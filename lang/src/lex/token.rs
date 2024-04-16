@@ -50,7 +50,7 @@ pub enum Token {
     ChevronL,
     ChevronR,
 
-    Global,
+    Set,
     Vars,
     Lists,
     Broadcasts,
@@ -84,10 +84,7 @@ impl Token {
 
     pub fn is_header(&self) -> bool {
         use Token::*;
-        matches!(
-            *self,
-            Global | Vars | Lists | Broadcasts | Costumes | Sounds
-        )
+        matches!(*self, Set | Vars | Lists | Broadcasts | Costumes | Sounds)
     }
 
     pub fn try_to_inner_string(self) -> Option<String> {
@@ -143,7 +140,7 @@ impl Token {
             Token::BracketR => TokenKind::BracketR,
             Token::ChevronL => TokenKind::ChevronL,
             Token::ChevronR => TokenKind::ChevronR,
-            Token::Global => TokenKind::Global,
+            Token::Set => TokenKind::Set,
             Token::Vars => TokenKind::Vars,
             Token::Lists => TokenKind::Lists,
             Token::Broadcasts => TokenKind::Broadcasts,
@@ -165,12 +162,7 @@ impl Token {
             return true;
         }
 
-        if other == Header
-            && matches!(
-                self.kind(),
-                Global | Vars | Lists | Broadcasts | Costumes | Sounds
-            )
-        {
+        if other == Header && self.is_header() {
             return true;
         }
 
@@ -212,7 +204,7 @@ pub enum TokenKind {
     ChevronR,
 
     Header,
-    Global,
+    Set,
     Vars,
     Lists,
     Broadcasts,
@@ -258,7 +250,7 @@ impl std::fmt::Display for TokenKind {
             TokenKind::ChevronL => write!(f, "<"),
             TokenKind::ChevronR => write!(f, ">"),
             TokenKind::Header => write!(f, "a Header"),
-            TokenKind::Global => write!(f, "global"),
+            TokenKind::Set => write!(f, "set"),
             TokenKind::Vars => write!(f, "vars"),
             TokenKind::Lists => write!(f, "lists"),
             TokenKind::Broadcasts => write!(f, "broadcasts"),
