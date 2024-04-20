@@ -166,6 +166,10 @@ impl Token {
             return true;
         }
 
+        if other == Value && matches!(self.kind(), Int | Float | Str) {
+            return true;
+        }
+
         false
     }
 }
@@ -179,6 +183,8 @@ pub enum TokenKind {
     MetaComment,
 
     Ident,
+
+    Value,
     Int,
     Float,
     Str,
@@ -228,6 +234,7 @@ impl std::fmt::Display for TokenKind {
             TokenKind::Comment => write!(f, "comment"),
             TokenKind::MetaComment => write!(f, "meta comment"),
             TokenKind::Ident => write!(f, "identifier"),
+            TokenKind::Value => write!(f, "value"),
             TokenKind::Int => write!(f, "integer"),
             TokenKind::Float => write!(f, "float"),
             TokenKind::Str => write!(f, "string"),

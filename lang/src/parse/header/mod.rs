@@ -8,6 +8,7 @@ pub use registry::HeaderRegistry;
 
 mod costumes;
 mod registry;
+mod set;
 mod sounds;
 
 pub fn parse_header<T>(
