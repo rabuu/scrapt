@@ -1,8 +1,7 @@
 use crate::manifest;
-use miette::Diagnostic;
 use thiserror::Error;
 
-#[derive(Debug, Error, Diagnostic)]
+#[derive(Debug, Error)]
 pub enum BuildError {
     #[error("path `{0}` couldn't be handled")]
     StrangePath(std::path::PathBuf),

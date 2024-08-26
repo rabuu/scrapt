@@ -19,7 +19,6 @@ sb3 = { workspace = true }
 serde = { workspace = true }
 clap = { version = "4.5.16", features = ["derive"] }
 md-5 = "0.10.6"
-miette = { version = "7.2.0", features = ["fancy"] }
 thiserror = "1.0.63"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"

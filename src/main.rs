@@ -3,7 +3,7 @@ use clap::Parser;
 use scrapt::cli::{CliArgs, Cmd};
 use scrapt::commands;
 
-fn main() -> miette::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     let cli = CliArgs::parse();
