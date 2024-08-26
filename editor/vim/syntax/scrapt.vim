@@ -2,7 +2,7 @@ if exists("b:current_syntax")
 	finish
 end
 
-syn keyword scraptKeyword set vars lists broadcasts costumes sounds def
+syn keyword scraptKeyword set vars lists broadcasts costumes sounds def when
 syn keyword scraptMediaTypes SVG PNG WAV MP4
 syn keyword scraptConditional if else
 syn keyword scraptRepeat repeat
