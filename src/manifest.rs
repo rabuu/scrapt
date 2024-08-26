@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 pub use toml::de::Error as TomlDeserializationError;
 
-use manifest_common::*;
+use sb3::Extension;
+use sb3::Metadata;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {

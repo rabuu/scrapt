@@ -2,13 +2,13 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-use zip::write::{FileOptions, ZipWriter};
+use zip::write::{SimpleFileOptions, ZipWriter};
 
 use super::{asset::Asset, BuildError};
 
 pub fn write_to_zip(
     output_path: impl AsRef<Path>,
-    scratch_project: manifest_scratch::Manifest,
+    scratch_project: sb3::Project,
     assets: &[Asset],
     rename: bool,
 ) -> Result<(), BuildError> {
@@ -16,7 +16,7 @@ pub fn write_to_zip(
 
     let output_file = fs::File::create(output_path)?;
     let mut zip = ZipWriter::new(output_file);
-    let zip_options = FileOptions::default();
+    let zip_options = SimpleFileOptions::default();
 
     zip.start_file("project.json", zip_options)?;
     zip.write_all(scratch_project.to_json().as_bytes())?;
@@ -35,7 +35,7 @@ pub fn write_to_zip(
 
 pub fn write_to_dir(
     output_dir: impl AsRef<Path>,
-    scratch_project: manifest_scratch::Manifest,
+    scratch_project: sb3::Project,
     assets: &[Asset],
     rename: bool,
 ) -> Result<(), BuildError> {
