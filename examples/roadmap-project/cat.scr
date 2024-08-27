@@ -23,6 +23,6 @@ def dance_(times)_and_sing_(lyrics)_if_<cond> {
     }
 }
 
--> events::Flag {
+when events::flag {
     dance_(10)_and_sing_("Heyho")_if_<fun greater 50>;
 }
