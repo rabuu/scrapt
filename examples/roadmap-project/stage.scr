@@ -7,7 +7,6 @@ set {
 
 vars {
     foobar = 42;
-    r#vars;
     baz;
 }
 
