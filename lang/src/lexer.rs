@@ -1,11 +1,12 @@
 use chumsky::prelude::*;
+use scratch_common_types::{AudioType, ImgType, Number};
 
 use crate::Span;
 
 // TODO: meta comments
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token<'src> {
-    Number(f64),
+    Number(Number),
     String(&'src str),
     Ident(&'src str),
 
@@ -22,6 +23,7 @@ pub enum Token<'src> {
     Colon,
     DoubleColon,
     Semicolon,
+    Equals,
 
     Plus,
     Minus,
@@ -47,39 +49,54 @@ pub enum Token<'src> {
     Audio(AudioType),
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum ImgType {
-    Svg,
-    Png,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum AudioType {
-    Wav,
-    Mp4,
-}
-
 pub fn lexer<'src>(
 ) -> impl Parser<'src, &'src str, Vec<(Token<'src>, Span)>, extra::Err<Rich<'src, char, Span>>> {
-    // A parser for numbers
-    let number = text::int(10)
-        .then(just('.').then(text::digits(10)).or_not())
+    // A parser for floats
+    let float = text::int(10)
+        .then(just('.').then(text::digits(10)))
         .to_slice()
         .from_str()
         .unwrapped()
-        .map(Token::Number);
+        .map(|f| Token::Number(Number::Float(f)));
+
+    // A parser for integers
+    let integer = text::int(10)
+        .to_slice()
+        .from_str()
+        .unwrapped()
+        .map(|i| Token::Number(Number::Integer(i)));
+
+    // A number is either a float or an integer
+    let number = float.or(integer);
 
     // A parser for strings
-    let string = just('"')
-        .ignore_then(none_of('"').repeated())
-        .then_ignore(just('"'))
+    let escape = just('\\')
+        .then(choice((
+            just('\\'),
+            just('/'),
+            just('"'),
+            just('b').to('\x08'),
+            just('f').to('\x0C'),
+            just('n').to('\n'),
+            just('r').to('\r'),
+            just('t').to('\t'),
+        )))
+        .ignored()
+        .boxed();
+
+    let string = none_of(r#"\""#)
+        .ignored()
+        .or(escape)
+        .repeated()
         .to_slice()
-        .map(Token::String);
+        .map(Token::String)
+        .delimited_by(just('"'), just('"'))
+        .boxed();
 
     // A parser for symbols
     let symbol = just("::")
         .to(Token::DoubleColon)
-        .or(one_of("()[]<>{},:;+-*/").map(|symbol: char| match symbol {
+        .or(one_of("()[]<>{}=,:;+-*/").map(|symbol: char| match symbol {
             '(' => Token::ParenOpen,
             ')' => Token::ParenClose,
             '[' => Token::BracketOpen,
@@ -88,6 +105,7 @@ pub fn lexer<'src>(
             '>' => Token::AngleClose,
             '{' => Token::CurlyOpen,
             '}' => Token::CurlyClose,
+            '=' => Token::Equals,
             ',' => Token::Comma,
             ':' => Token::Colon,
             ';' => Token::Semicolon,
@@ -139,4 +157,47 @@ pub fn lexer<'src>(
         .recover_with(skip_then_retry_until(any().ignored(), end()))
         .repeated()
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tokenization() {
+        let (tokens, errors) = lexer()
+            .parse(r#"vars {hello: MP4 = 1.3; foo=8; [ "hello"] }"#)
+            .into_output_errors();
+
+        assert!(errors.is_empty());
+
+        let tokens: Vec<Token> = tokens
+            .unwrap()
+            .into_iter()
+            .map(|(tok, _span)| tok)
+            .collect();
+
+        use Token::*;
+        assert_eq!(
+            tokens,
+            vec![
+                Vars,
+                CurlyOpen,
+                Ident("hello"),
+                Colon,
+                Audio(AudioType::Mp4),
+                Equals,
+                Number(scratch_common_types::Number::Float(1.3)),
+                Semicolon,
+                Ident("foo"),
+                Equals,
+                Number(scratch_common_types::Number::Integer(8)),
+                Semicolon,
+                BracketOpen,
+                String("hello"),
+                BracketClose,
+                CurlyClose,
+            ]
+        );
+    }
 }

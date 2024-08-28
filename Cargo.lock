@@ -671,6 +671,7 @@ name = "scrapt-lang"
 version = "0.1.0"
 dependencies = [
  "chumsky",
+ "scratch-common-types",
 ]
 
 [[package]]
