@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
+use scratch_common_types::Extension;
 use serde::{Deserialize, Serialize};
 pub use toml::de::Error as TomlDeserializationError;
 
-use sb3::Extension;
 use sb3::Metadata;
 
 #[derive(Debug, Serialize, Deserialize)]

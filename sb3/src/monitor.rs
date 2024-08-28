@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
 use super::common::*;

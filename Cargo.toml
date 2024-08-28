@@ -6,16 +6,15 @@ edition = "2021"
 description = "Script your Scratch!"
 
 [workspace]
-members = [
-    "lang",
-    "sb3",
-]
+members = ["common", "sb3", "lang"]
 
 [workspace.dependencies]
+scratch-common-types = { path = "common", features = ["serde"] }
 sb3 = { path = "sb3" }
 serde = { version = "1.0.209", features = ["derive"] }
 
 [dependencies]
+scratch-common-types = { workspace = true }
 sb3 = { workspace = true }
 serde = { workspace = true }
 clap = { version = "4.5.16", features = ["derive"] }

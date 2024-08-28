@@ -645,6 +645,7 @@ checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 name = "sb3"
 version = "0.1.0"
 dependencies = [
+ "scratch-common-types",
  "serde",
  "serde_json",
 ]
@@ -656,6 +657,7 @@ dependencies = [
  "clap",
  "md-5",
  "sb3",
+ "scratch-common-types",
  "serde",
  "thiserror",
  "toml",
@@ -669,6 +671,13 @@ name = "scrapt-lang"
 version = "0.1.0"
 dependencies = [
  "chumsky",
+]
+
+[[package]]
+name = "scratch-common-types"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

@@ -1,5 +1,6 @@
 use std::{collections::HashMap, marker::PhantomData};
 
+use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
 use crate::common::*;
@@ -261,30 +262,30 @@ pub mod builder {
 
     impl PrimitiveBlockBuilder {
         pub fn number(self, num: Number) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(4, Value::Num(num))
+            PrimitiveBlock::Simple(4, Value::Number(num))
         }
 
         // TODO
         // pub fn positive_number(self, num: PositiveNumber)
 
         pub fn positive_integer(self, num: u32) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(6, Value::Num(Number::Int(num as i64)))
+            PrimitiveBlock::Simple(6, Value::Number(Number::Integer(num as i32)))
         }
 
-        pub fn integer(self, num: i64) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(7, Value::Num(Number::Int(num)))
+        pub fn integer(self, num: i32) -> PrimitiveBlock {
+            PrimitiveBlock::Simple(7, Value::Number(Number::Integer(num)))
         }
 
         pub fn angle(self, angle: Angle) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(8, Value::Num(Number::Int(angle as i64)))
+            PrimitiveBlock::Simple(8, Value::Number(Number::Integer(angle as i32)))
         }
 
         pub fn color(self, color: Color) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(9, Value::Str(color))
+            PrimitiveBlock::Simple(9, Value::String(color))
         }
 
         pub fn string(self, string: String) -> PrimitiveBlock {
-            PrimitiveBlock::Simple(10, Value::Str(string))
+            PrimitiveBlock::Simple(10, Value::String(string))
         }
 
         pub fn broadcast(self, name: Name, id: Id) -> PrimitiveBlock {

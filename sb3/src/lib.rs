@@ -1,12 +1,11 @@
+use scratch_common_types::Extension;
 use serde::{Deserialize, Serialize};
 
-pub use extension::Extension;
 pub use meta::Metadata;
 pub use target::{Asset, Target};
 
 mod block;
 mod common;
-mod extension;
 mod meta;
 mod monitor;
 mod target;
@@ -18,7 +17,7 @@ pub type Version = String;
 pub struct Project {
     pub targets: Vec<target::Target>,
     pub monitors: Vec<monitor::Monitor>,
-    pub extensions: Vec<extension::Extension>,
+    pub extensions: Vec<Extension>,
     pub meta: meta::Metadata,
 }
 
@@ -45,7 +44,7 @@ pub mod builder {
     pub struct ProjectBuilder {
         targets: Vec<target::Target>,
         monitors: Vec<monitor::Monitor>,
-        extensions: Vec<extension::Extension>,
+        extensions: Vec<Extension>,
         meta: Option<meta::Metadata>,
     }
 
@@ -73,7 +72,7 @@ pub mod builder {
             self
         }
 
-        pub fn add_extension(mut self, extension: extension::Extension) -> ProjectBuilder {
+        pub fn add_extension(mut self, extension: Extension) -> ProjectBuilder {
             self.extensions.push(extension);
             self
         }

@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
 use crate::block::Block;
-use crate::common::{self, *};
+use crate::common::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -104,8 +105,8 @@ impl Asset {
             // TODO
             asset_type: AssetType::Costume(CostumeAsset {
                 bitmap_resolution: None,
-                rotation_center_x: common::Number::Int(240),
-                rotation_center_y: common::Number::Int(180),
+                rotation_center_x: Number::Integer(240),
+                rotation_center_y: Number::Integer(180),
             }),
         }
     }

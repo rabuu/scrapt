@@ -1,3 +1,4 @@
+use scratch_common_types::Number;
 use serde::de::Error;
 
 use crate::*;
@@ -10,20 +11,6 @@ pub type Angle = u16;
 pub type Color = String;
 pub type Opcode = String;
 pub type AssetId = String;
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Value {
-    Num(Number),
-    Str(String),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Number {
-    Int(i64),
-    Float(f32),
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
