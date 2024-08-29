@@ -1,3 +1,5 @@
+use std::fmt;
+
 use chumsky::prelude::*;
 use scratch_common_types::{AudioType, ImgType, Number};
 
@@ -47,6 +49,48 @@ pub enum Token<'src> {
 
     Img(ImgType),
     Audio(AudioType),
+}
+
+impl fmt::Display for Token<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Token::Number(n) => write!(f, "{n}"),
+            Token::String(s) => write!(f, "\"{s}\""),
+            Token::Ident(i) => write!(f, "{i}"),
+            Token::ParenOpen => write!(f, "("),
+            Token::ParenClose => write!(f, ")"),
+            Token::BracketOpen => write!(f, "["),
+            Token::BracketClose => write!(f, "]"),
+            Token::AngleOpen => write!(f, "<"),
+            Token::AngleClose => write!(f, ">"),
+            Token::CurlyOpen => write!(f, "{{"),
+            Token::CurlyClose => write!(f, "}}"),
+            Token::Comma => write!(f, ","),
+            Token::Colon => write!(f, ":"),
+            Token::DoubleColon => write!(f, "::"),
+            Token::Semicolon => write!(f, ";"),
+            Token::Equals => write!(f, "="),
+            Token::Plus => write!(f, "+"),
+            Token::Minus => write!(f, "-"),
+            Token::Asterisk => write!(f, "*"),
+            Token::Slash => write!(f, "/"),
+            Token::Greater => write!(f, "greater"),
+            Token::Less => write!(f, "less"),
+            Token::Set => write!(f, "set"),
+            Token::Vars => write!(f, "vars"),
+            Token::Lists => write!(f, "lists"),
+            Token::Broadcasts => write!(f, "broadcasts"),
+            Token::Costumes => write!(f, "costumes"),
+            Token::Sounds => write!(f, "sounds"),
+            Token::Def => write!(f, "def"),
+            Token::When => write!(f, "when"),
+            Token::If => write!(f, "if"),
+            Token::Else => write!(f, "else"),
+            Token::Repeat => write!(f, "repeat"),
+            Token::Img(x) => write!(f, "{x}"),
+            Token::Audio(x) => write!(f, "{x}"),
+        }
+    }
 }
 
 pub fn lexer<'src>(

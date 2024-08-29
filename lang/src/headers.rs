@@ -38,30 +38,26 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
 
     let decl = ident
         .map_with(|var_name, e| (var_name, e.span()))
-        .labelled("variable name")
-        .then(
-            just(Token::Equals)
-                .ignore_then(value.labelled("value"))
-                .or_not(),
-        )
-        .then_ignore(just(Token::Semicolon));
+        .then(just(Token::Equals).ignore_then(value).or_not())
+        .then_ignore(just(Token::Semicolon))
+        .labelled("variable declaration");
 
     just(Token::Vars).ignore_then(
         decl.repeated()
             .at_least(1)
             .collect::<Vec<_>>()
             // FIXME: weird error message
-            .try_map(|decls, _| {
+            .validate(|decls, _, emitter| {
                 let mut vars = HashMap::new();
                 for ((ident, span), val) in decls {
                     if vars.insert(ident.clone(), val).is_some() {
-                        return Err(Rich::custom(
+                        emitter.emit(Rich::custom(
                             span,
                             format!("Variable '{}' already exists", ident),
                         ));
                     }
                 }
-                Ok(vars)
+                vars
             })
             .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
     )
