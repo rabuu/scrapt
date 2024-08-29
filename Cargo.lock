@@ -642,22 +642,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
-name = "sb3"
-version = "0.1.0"
-dependencies = [
- "scratch-common-types",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "scrapt"
 version = "0.1.0"
 dependencies = [
  "clap",
  "md-5",
- "sb3",
  "scratch-common-types",
+ "scratch-sb3",
  "serde",
  "thiserror",
  "toml",
@@ -679,6 +670,15 @@ name = "scratch-common-types"
 version = "0.1.0"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "scratch-sb3"
+version = "0.1.0"
+dependencies = [
+ "scratch-common-types",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

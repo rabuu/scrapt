@@ -46,7 +46,7 @@ pub fn build(
     //let stage_tokens = todo!();
     //let header_reg = todo!();
     //
-    //let mut s_builder = sb3::Target::stage_builder();
+    //let mut s_builder = scratch_sb3::Target::stage_builder();
     //let mut assets = Vec::new();
     //
     //for name in &header_reg.costumes_list {
@@ -65,7 +65,7 @@ pub fn build(
     //
     //    let asset = Asset::new(path)?;
     //    assets.push(asset.clone());
-    //    s_builder = s_builder.add_costume(sb3::Asset::costume(
+    //    s_builder = s_builder.add_costume(scratch_sb3::Asset::costume(
     //        asset.hash.clone(),
     //        name.clone(),
     //        asset.filename(manifest_scrapt.assets.auto_renaming)?,
@@ -89,7 +89,7 @@ pub fn build(
     //
     //    let asset = Asset::new(path)?;
     //    assets.push(asset.clone());
-    //    s_builder = s_builder.add_sound(sb3::Asset::sound(
+    //    s_builder = s_builder.add_sound(scratch_sb3::Asset::sound(
     //        asset.hash.clone(),
     //        name.clone(),
     //        asset.filename(manifest_scrapt.assets.auto_renaming)?,
@@ -102,7 +102,7 @@ pub fn build(
     //    .current_costume(header_reg.current_costume)
     //    .build();
     //
-    //let scratch_project = sb3::Project::builder(stage).build();
+    //let scratch_project = scratch_sb3::Project::builder(stage).build();
     //
     //if no_zip {
     //    write::write_to_dir(

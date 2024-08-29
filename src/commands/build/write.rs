@@ -8,7 +8,7 @@ use super::{asset::Asset, BuildError};
 
 pub fn write_to_zip(
     output_path: impl AsRef<Path>,
-    scratch_project: sb3::Project,
+    scratch_project: scratch_sb3::Project,
     assets: &[Asset],
     rename: bool,
 ) -> Result<(), BuildError> {
@@ -35,7 +35,7 @@ pub fn write_to_zip(
 
 pub fn write_to_dir(
     output_dir: impl AsRef<Path>,
-    scratch_project: sb3::Project,
+    scratch_project: scratch_sb3::Project,
     assets: &[Asset],
     rename: bool,
 ) -> Result<(), BuildError> {
