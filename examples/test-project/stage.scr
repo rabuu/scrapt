@@ -1,5 +1,4 @@
 vars {
-    hello = 1;
+    hello;
     foo = "foo";
-    foo = 1.1;
 }

@@ -36,12 +36,14 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
     }
     .labelled("value");
 
-    // TODO: decl without value
     let decl = ident
         .map_with(|var_name, e| (var_name, e.span()))
         .labelled("variable name")
-        .then_ignore(just(Token::Equals))
-        .then(value.labelled("value"))
+        .then(
+            just(Token::Equals)
+                .ignore_then(value.labelled("value"))
+                .or_not(),
+        )
         .then_ignore(just(Token::Semicolon));
 
     just(Token::Vars).ignore_then(
@@ -52,7 +54,7 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
             .try_map(|decls, _| {
                 let mut vars = HashMap::new();
                 for ((ident, span), val) in decls {
-                    if vars.insert(ident.clone(), Some(val)).is_some() {
+                    if vars.insert(ident.clone(), val).is_some() {
                         return Err(Rich::custom(
                             span,
                             format!("Variable '{}' already exists", ident),
