@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use chumsky::prelude::*;
 use scratch_common_types::{AudioType, ImgType, Value};
 
-use crate::{Ident, ParserInput, Span, Token};
+use crate::{Ident, ParserInput, Span, Spanned, Token};
 
 type VarsHeader = HashMap<Ident, Option<Value>>;
 type ListsHeader = HashMap<Ident, Option<Vec<Value>>>;
@@ -21,32 +21,36 @@ pub struct Headers {
     sounds: SoundsHeader,
 }
 
-// TODO: span
-pub fn vars_header_parser<'tok, 'src: 'tok>(
-) -> impl Parser<'tok, ParserInput<'tok, 'src>, VarsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
+fn ident<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, Spanned<Ident>, extra::Err<Rich<'tok, Token<'src>, Span>>>
 {
-    let ident = select! {
+    select! {
         Token::Ident(ident) => Ident::new(ident.to_string())
     }
-    .labelled("identifier");
+    .labelled("identifier")
+    .map_with(|var_name, e| (var_name, e.span()))
+}
 
-    let value = select! {
+fn value<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, Value, extra::Err<Rich<'tok, Token<'src>, Span>>> {
+    select! {
         Token::Number(num) => Value::Number(num),
         Token::String(string) => Value::String(string.to_string()),
     }
-    .labelled("value");
+    .labelled("value")
+}
 
-    let decl = ident
-        .map_with(|var_name, e| (var_name, e.span()))
-        .then(just(Token::Equals).ignore_then(value).or_not())
-        .then_ignore(just(Token::Semicolon))
-        .labelled("variable declaration");
+pub fn vars_header_parser<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, VarsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
+{
+    let decl = ident()
+        .then(just(Token::Equals).ignore_then(value()).or_not())
+        .then_ignore(just(Token::Semicolon));
 
     just(Token::Vars).ignore_then(
         decl.repeated()
             .at_least(1)
             .collect::<Vec<_>>()
-            // FIXME: weird error message
             .validate(|decls, _, emitter| {
                 let mut vars = HashMap::new();
                 for ((ident, span), val) in decls {
@@ -58,6 +62,34 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
                     }
                 }
                 vars
+            })
+            .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
+    )
+}
+
+pub fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
+    'tok,
+    ParserInput<'tok, 'src>,
+    BroadcastsHeader,
+    extra::Err<Rich<'tok, Token<'src>, Span>>,
+> {
+    let decl = ident().then_ignore(just(Token::Semicolon));
+
+    just(Token::Broadcasts).ignore_then(
+        decl.repeated()
+            .at_least(1)
+            .collect::<Vec<_>>()
+            .validate(|decls, _, emitter| {
+                let mut broadcasts = HashSet::new();
+                for (ident, span) in decls {
+                    if !broadcasts.insert(ident.clone()) {
+                        emitter.emit(Rich::custom(
+                            span,
+                            format!("Broadcast '{ident}' declared twice"),
+                        ));
+                    }
+                }
+                broadcasts
             })
             .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
     )
