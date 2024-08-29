@@ -1,18 +1,19 @@
 use clap::Parser;
 
-use scrapt::{build, cli, new};
+use scrapt::cli::{CliArgs, Cmd};
+use scrapt::commands;
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    let cli = cli::CliArgs::parse();
+    let cli = CliArgs::parse();
 
     match cli.cmd {
-        cli::Cmd::Build(args) => {
-            build::build(args.project_path, args.manifest, args.output, args.no_zip)?
+        Cmd::Build(args) => {
+            commands::build(args.project_path, args.manifest, args.output, args.no_zip)?
         }
-        cli::Cmd::Generate(_) => unimplemented!(),
-        cli::Cmd::New(args) => new::new(args.path)?,
+        Cmd::Generate(_) => unimplemented!(),
+        Cmd::New(args) => commands::new(args.path)?,
     }
 
     Ok(())

@@ -7,7 +7,6 @@ set {
 
 vars {
     foobar = 42;
-    r#vars;
     baz;
 }
 
@@ -34,6 +33,6 @@ sounds {
     sound2: MP4 = "cool-sound.snd";
 }
 
--> events::Flag {
-    sound::play(sound1);
+when events::flag_clicked {
+    sound::play_sound_[sound1]_until_done;
 }

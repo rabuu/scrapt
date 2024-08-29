@@ -1,8 +1,4 @@
-costumes {
-    backdrop1: SVG;
-}
-
-sounds {
-    sound1: WAV;
-    sound2: WAV = "sound2.WAV";
+vars {
+    hello;
+    foo = "foo";
 }

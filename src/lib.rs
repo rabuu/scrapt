@@ -1,3 +1,3 @@
-pub mod build;
 pub mod cli;
-pub mod new;
+pub mod commands;
+mod manifest;

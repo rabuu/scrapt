@@ -6,34 +6,21 @@ edition = "2021"
 description = "Script your Scratch!"
 
 [workspace]
-members = [
-    "manifest/common",
-    "manifest/scratch",
-    "manifest/scrapt",
-    "lang",
-]
+members = ["scratch/common", "scratch/sb3", "lang"]
 
 [workspace.dependencies]
-manifest_common = { path = "manifest/common" }
-manifest_scratch = { path = "manifest/scratch" }
-manifest_scrapt = { path = "manifest/scrapt" }
-lang = { path = "lang" }
-
-serde = { version = "1", features = ["derive"] }
-itertools = "0.12"
-thiserror = "1"
-tracing = "0.1"
+scratch-common-types = { path = "scratch/common", features = ["serde"] }
+scratch-sb3 = { path = "scratch/sb3" }
+serde = { version = "1.0.209", features = ["derive"] }
 
 [dependencies]
-manifest_scrapt = { workspace = true }
-manifest_scratch = { workspace = true }
-lang = { workspace = true }
-thiserror = { workspace = true }
-tracing = { workspace = true }
-
-# binary only
-clap = { version = "4", features = ["derive"] }
-anyhow = "1"
-tracing-subscriber = "0.3"
-zip = { version = "0.6", default-features = false }
-md-5 = "0.10"
+scratch-common-types = { workspace = true }
+scratch-sb3 = { workspace = true }
+serde = { workspace = true }
+clap = { version = "4.5.16", features = ["derive"] }
+md-5 = "0.10.6"
+thiserror = "1.0.63"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+zip = "2.2.0"
+toml = "0.8.19"

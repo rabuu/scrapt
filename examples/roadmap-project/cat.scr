@@ -2,27 +2,27 @@ vars {
     fun = 99;
 }
 
-def dance: (times) x and sing (lyrics) if <cond> {
+def dance_(times)_and_sing_(lyrics)_if_<cond> {
     if <cond> {
-        looks::say(lyrics);
+        looks::say_(lyrics);
     }
 
-    motion::setRotationStyle("left-right");
+    motion::set_rotation_style_["left-right"];
 
     repeat (times) {
-        motion::pointInDirection(90);
-        waitSecs(0.2);
-        motion::pointInDirection(-90);
-        waitSecs(0.3);
+        motion::point_in_direction_(90);
+        control::wait_(0.2)_secs;
+        motion::point_in_direction_(-90);
+        control::wait_(0.2)_secs;
     }
 
-    motion::pointInDirection(90);
+    motion::point_in_direction_(90);
 
     if <cond> {
-        looks::say("");
+        looks::say_("");
     }
 }
 
--> events::Flag {
-    dance(10)("Heyho")<(fun > 50)>;
+when events::flag {
+    dance_(10)_and_sing_("Heyho")_if_<fun greater 50>;
 }
