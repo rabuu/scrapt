@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 scratch-common-types = { workspace = true }
-chumsky = "1.0.0-alpha.7"
+chumsky = { version = "1.0.0-alpha.7", features = ["label"] }
