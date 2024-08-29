@@ -5,14 +5,14 @@ fn main() {
     let (tokens, tok_errs) = scrapt_lang::lexer().parse(&code).into_output_errors();
 
     if let Some(toks) = tokens {
-        let (var_header, errs) = scrapt_lang::headers::vars_header_parser()
+        let (var_header, errs) = scrapt_lang::headers::broadcasts_header_parser()
             .map_with(|header, e| (header, e.span()))
             .parse(toks.as_slice().spanned((code.len()..code.len()).into()))
             .into_output_errors();
 
         if let Some((header, _)) = var_header {
-            for (ident, value) in header {
-                println!("{ident} => {value:?}");
+            for ident in header {
+                println!("{ident}");
             }
         }
 
