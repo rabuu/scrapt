@@ -171,9 +171,12 @@ pub fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
     )
 }
 
-pub fn costumes_header_parser<'tok, 'src: 'tok>(
-) -> impl Parser<'tok, ParserInput<'tok, 'src>, CostumesHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
-{
+pub fn costumes_header_parser<'tok, 'src: 'tok>() -> impl Parser<
+    'tok,
+    ParserInput<'tok, 'src>,
+    (CostumesHeader, usize),
+    extra::Err<Rich<'tok, Token<'src>, Span>>,
+> {
     let img_type = select! { Token::Img(img) => img }.labelled("image type");
 
     let path = select! {
@@ -182,7 +185,10 @@ pub fn costumes_header_parser<'tok, 'src: 'tok>(
     .try_map(|p: &str, span| PathBuf::from_str(p).map_err(|e| Rich::custom(span, e)))
     .labelled("image path");
 
-    let decl = ident()
+    let decl = just(Token::Asterisk)
+        .or_not()
+        .map(|star| star.is_some())
+        .then(ident())
         .then(just(Token::Colon).ignore_then(img_type))
         .then(just(Token::Equals).ignore_then(path).or_not())
         .then_ignore(just(Token::Semicolon));
@@ -190,10 +196,22 @@ pub fn costumes_header_parser<'tok, 'src: 'tok>(
     just(Token::Costumes).ignore_then(
         decl.repeated()
             .at_least(1)
-            .collect::<Vec<_>>()
+            .enumerate()
+            .collect::<Vec<(usize, _)>>()
             .validate(|decls, _, emitter| {
                 let mut costumes = HashMap::new();
-                for (((id, span), file_type), path) in decls {
+                let mut current_costume = None;
+                for (i, (((star, (id, span)), file_type), path)) in decls {
+                    if star {
+                        if current_costume.is_some() {
+                            emitter.emit(Rich::custom(
+                                span,
+                                "Cannot mark two costumes as current".to_string(),
+                            ))
+                        }
+                        current_costume = Some(i);
+                    }
+
                     if costumes.insert(id.clone(), (file_type, path)).is_some() {
                         emitter.emit(Rich::custom(
                             span,
@@ -201,7 +219,8 @@ pub fn costumes_header_parser<'tok, 'src: 'tok>(
                         ));
                     }
                 }
-                costumes
+
+                (costumes, current_costume.unwrap_or(0))
             })
             .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
     )
