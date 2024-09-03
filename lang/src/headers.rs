@@ -7,6 +7,7 @@ use scratch_common_types::{AudioType, ImgType, Value};
 
 use crate::{Ident, ParserInput, Span, Spanned, Token};
 
+type SetHeader = HashMap<Ident, Value>;
 type VarsHeader = HashMap<Ident, Option<Value>>;
 type ListsHeader = HashMap<Ident, Vec<Value>>;
 type BroadcastsHeader = HashSet<Ident>;
@@ -14,6 +15,7 @@ type CostumesHeader = HashMap<Ident, (ImgType, Option<PathBuf>)>;
 type SoundsHeader = HashMap<Ident, (AudioType, Option<PathBuf>)>;
 
 pub struct Headers {
+    set: SetHeader,
     vars: VarsHeader,
     lists: ListsHeader,
     broadcasts: BroadcastsHeader,
@@ -39,6 +41,44 @@ fn value<'tok, 'src: 'tok>(
         Token::String(string) => Value::String(string.to_string()),
     }
     .labelled("value")
+}
+
+// TODO: better validation (on values)
+pub fn set_header_parser<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, SetHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
+{
+    let valid_setting = ident().validate(|(id, span), _, emitter| {
+        if !matches!(
+            id.inner(),
+            "tempo" | "volume" | "videoTransparency" | "videoState"
+        ) {
+            emitter.emit(Rich::custom(span, format!("'{id}' is no valid setting")));
+        }
+        (id, span)
+    });
+
+    let decl = valid_setting
+        .then(just(Token::Equals).ignore_then(value()))
+        .then_ignore(just(Token::Semicolon));
+
+    just(Token::Set).ignore_then(
+        decl.repeated()
+            .at_least(1)
+            .collect::<Vec<_>>()
+            .validate(|decls, _, emitter| {
+                let mut settings = HashMap::new();
+                for ((id, span), val) in decls {
+                    if settings.insert(id.clone(), val).is_some() {
+                        emitter.emit(Rich::custom(
+                            span,
+                            format!("Variable '{}' already exists", id),
+                        ));
+                    }
+                }
+                settings
+            })
+            .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
+    )
 }
 
 pub fn vars_header_parser<'tok, 'src: 'tok>(

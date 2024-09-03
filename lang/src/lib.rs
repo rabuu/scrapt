@@ -21,6 +21,10 @@ impl Ident {
     pub fn new(ident: String) -> Self {
         Ident(ident)
     }
+
+    pub fn inner(&self) -> &str {
+        &self.0
+    }
 }
 
 impl fmt::Display for Ident {
