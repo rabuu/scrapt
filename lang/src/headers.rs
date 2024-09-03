@@ -7,7 +7,7 @@ use scratch_common_types::{AudioType, ImgType, Value};
 use crate::{Ident, ParserInput, Span, Spanned, Token};
 
 type VarsHeader = HashMap<Ident, Option<Value>>;
-type ListsHeader = HashMap<Ident, Option<Vec<Value>>>;
+type ListsHeader = HashMap<Ident, Vec<Value>>;
 type BroadcastsHeader = HashSet<Ident>;
 type CostumesHeader = HashMap<Ident, (ImgType, Option<PathBuf>)>;
 type SoundsHeader = HashMap<Ident, (AudioType, Option<PathBuf>)>;
@@ -53,15 +53,50 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
             .collect::<Vec<_>>()
             .validate(|decls, _, emitter| {
                 let mut vars = HashMap::new();
-                for ((ident, span), val) in decls {
-                    if vars.insert(ident.clone(), val).is_some() {
+                for ((id, span), val) in decls {
+                    if vars.insert(id.clone(), val).is_some() {
                         emitter.emit(Rich::custom(
                             span,
-                            format!("Variable '{}' already exists", ident),
+                            format!("Variable '{}' already exists", id),
                         ));
                     }
                 }
                 vars
+            })
+            .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
+    )
+}
+
+pub fn lists_header_parser<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, ListsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
+{
+    let list = value()
+        .separated_by(just(Token::Comma))
+        .allow_trailing()
+        .collect::<Vec<_>>()
+        .delimited_by(just(Token::BracketOpen), just(Token::BracketClose));
+
+    let decl = ident()
+        .then(
+            just(Token::Equals)
+                .ignore_then(list)
+                .or_not()
+                .map(Option::unwrap_or_default),
+        )
+        .then_ignore(just(Token::Semicolon));
+
+    just(Token::Lists).ignore_then(
+        decl.repeated()
+            .at_least(1)
+            .collect::<Vec<_>>()
+            .validate(|decls, _, emitter| {
+                let mut lists = HashMap::new();
+                for ((id, span), val) in decls {
+                    if lists.insert(id.clone(), val).is_some() {
+                        emitter.emit(Rich::custom(span, format!("List '{}' already exists", id)));
+                    }
+                }
+                lists
             })
             .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
     )
@@ -81,11 +116,11 @@ pub fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
             .collect::<Vec<_>>()
             .validate(|decls, _, emitter| {
                 let mut broadcasts = HashSet::new();
-                for (ident, span) in decls {
-                    if !broadcasts.insert(ident.clone()) {
+                for (id, span) in decls {
+                    if !broadcasts.insert(id.clone()) {
                         emitter.emit(Rich::custom(
                             span,
-                            format!("Broadcast '{ident}' declared twice"),
+                            format!("Broadcast '{id}' declared twice"),
                         ));
                     }
                 }
