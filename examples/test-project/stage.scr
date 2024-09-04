@@ -1,3 +1,12 @@
-broadcasts {
-    hahahahaha;
+costumes {
+   *cos1: SVG = "hey";
+   cos2: PNG;
+}
+
+sounds {
+   s: MP4 = "yo";
+}
+
+set {
+   tempo = 60;
 }
