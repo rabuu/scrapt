@@ -14,14 +14,94 @@ type BroadcastsHeader = HashSet<Ident>;
 type CostumesHeader = HashMap<Ident, (ImgType, Option<PathBuf>)>;
 type SoundsHeader = HashMap<Ident, (AudioType, Option<PathBuf>)>;
 
+#[derive(Debug)]
 pub struct Headers {
-    set: SetHeader,
-    vars: VarsHeader,
-    lists: ListsHeader,
-    broadcasts: BroadcastsHeader,
-    costumes: CostumesHeader,
-    current_costume: Option<usize>,
-    sounds: SoundsHeader,
+    pub set: SetHeader,
+    pub vars: VarsHeader,
+    pub lists: ListsHeader,
+    pub broadcasts: BroadcastsHeader,
+    pub costumes: CostumesHeader,
+    pub current_costume: Option<usize>,
+    pub sounds: SoundsHeader,
+}
+
+impl Headers {
+    // TODO: better validation & error msg
+    pub fn parser<'tok, 'src: 'tok>(
+    ) -> impl Parser<'tok, ParserInput<'tok, 'src>, Headers, extra::Err<Rich<'tok, Token<'src>, Span>>>
+    {
+        any_header()
+            .repeated()
+            .collect::<Vec<_>>()
+            .validate(|headers, e, emitter| {
+                let mut set = None;
+                let mut vars = None;
+                let mut lists = None;
+                let mut broadcasts = None;
+                let mut costumes = None;
+                let mut sounds = None;
+
+                for header in headers {
+                    match header {
+                        Header::Set(s) if set.is_none() => set = Some(s),
+                        Header::Vars(v) if vars.is_none() => vars = Some(v),
+                        Header::Lists(l) if lists.is_none() => lists = Some(l),
+                        Header::Broadcasts(b) if broadcasts.is_none() => broadcasts = Some(b),
+                        Header::Costumes(c) if costumes.is_none() => costumes = Some(c),
+                        Header::Sounds(s) if sounds.is_none() => sounds = Some(s),
+                        _ => emitter.emit(Rich::custom(
+                            e.span(),
+                            format!("Duplicate '{}' header", header.kind()),
+                        )),
+                    }
+                }
+
+                let (costumes, current_costume) = costumes.unwrap_or_default();
+
+                Headers {
+                    set: set.unwrap_or_default(),
+                    vars: vars.unwrap_or_default(),
+                    lists: lists.unwrap_or_default(),
+                    broadcasts: broadcasts.unwrap_or_default(),
+                    costumes,
+                    current_costume,
+                    sounds: sounds.unwrap_or_default(),
+                }
+            })
+    }
+}
+
+enum Header {
+    Set(SetHeader),
+    Vars(VarsHeader),
+    Lists(ListsHeader),
+    Broadcasts(BroadcastsHeader),
+    Costumes((CostumesHeader, Option<usize>)),
+    Sounds(SoundsHeader),
+}
+
+impl Header {
+    fn kind(&self) -> &'static str {
+        match self {
+            Header::Set(_) => "set",
+            Header::Vars(_) => "vars",
+            Header::Lists(_) => "lists",
+            Header::Broadcasts(_) => "broadcasts",
+            Header::Costumes(_) => "costumes",
+            Header::Sounds(_) => "sounds",
+        }
+    }
+}
+
+fn any_header<'tok, 'src: 'tok>(
+) -> impl Parser<'tok, ParserInput<'tok, 'src>, Header, extra::Err<Rich<'tok, Token<'src>, Span>>> {
+    set_header_parser()
+        .map(Header::Set)
+        .or(vars_header_parser().map(Header::Vars))
+        .or(lists_header_parser().map(Header::Lists))
+        .or(broadcasts_header_parser().map(Header::Broadcasts))
+        .or(costumes_header_parser().map(Header::Costumes))
+        .or(sounds_header_parser().map(Header::Sounds))
 }
 
 fn ident<'tok, 'src: 'tok>(
@@ -44,7 +124,7 @@ fn value<'tok, 'src: 'tok>(
 }
 
 // TODO: better validation (on values)
-pub fn set_header_parser<'tok, 'src: 'tok>(
+fn set_header_parser<'tok, 'src: 'tok>(
 ) -> impl Parser<'tok, ParserInput<'tok, 'src>, SetHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
 {
     let valid_setting = ident().validate(|(id, span), _, emitter| {
@@ -81,7 +161,7 @@ pub fn set_header_parser<'tok, 'src: 'tok>(
     )
 }
 
-pub fn vars_header_parser<'tok, 'src: 'tok>(
+fn vars_header_parser<'tok, 'src: 'tok>(
 ) -> impl Parser<'tok, ParserInput<'tok, 'src>, VarsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
 {
     let decl = ident()
@@ -108,7 +188,7 @@ pub fn vars_header_parser<'tok, 'src: 'tok>(
     )
 }
 
-pub fn lists_header_parser<'tok, 'src: 'tok>(
+fn lists_header_parser<'tok, 'src: 'tok>(
 ) -> impl Parser<'tok, ParserInput<'tok, 'src>, ListsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
 {
     let list = value()
@@ -143,7 +223,7 @@ pub fn lists_header_parser<'tok, 'src: 'tok>(
     )
 }
 
-pub fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
+fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
     'tok,
     ParserInput<'tok, 'src>,
     BroadcastsHeader,
@@ -171,10 +251,10 @@ pub fn broadcasts_header_parser<'tok, 'src: 'tok>() -> impl Parser<
     )
 }
 
-pub fn costumes_header_parser<'tok, 'src: 'tok>() -> impl Parser<
+fn costumes_header_parser<'tok, 'src: 'tok>() -> impl Parser<
     'tok,
     ParserInput<'tok, 'src>,
-    (CostumesHeader, usize),
+    (CostumesHeader, Option<usize>),
     extra::Err<Rich<'tok, Token<'src>, Span>>,
 > {
     let img_type = select! { Token::Img(img) => img }.labelled("image type");
@@ -220,13 +300,13 @@ pub fn costumes_header_parser<'tok, 'src: 'tok>() -> impl Parser<
                     }
                 }
 
-                (costumes, current_costume.unwrap_or(0))
+                (costumes, current_costume)
             })
             .delimited_by(just(Token::CurlyOpen), just(Token::CurlyClose)),
     )
 }
 
-pub fn sounds_header_parser<'tok, 'src: 'tok>(
+fn sounds_header_parser<'tok, 'src: 'tok>(
 ) -> impl Parser<'tok, ParserInput<'tok, 'src>, SoundsHeader, extra::Err<Rich<'tok, Token<'src>, Span>>>
 {
     let audio_type = select! { Token::Audio(audio) => audio }.labelled("audio type");
