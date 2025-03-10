@@ -161,8 +161,7 @@ pub fn lexer<'src>(
         }));
 
     // A parser for identifiers and keywords
-    // FIXME: let ident = text::ascii::ident().map(|ident: &str| match ident {
-    let ident = text::unicode::ident().map(|ident: &str| match ident {
+    let ident = text::ascii::ident().map(|ident: &str| match ident {
         "set" => Token::Set,
         "vars" => Token::Vars,
         "lists" => Token::Lists,
