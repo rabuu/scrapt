@@ -2,7 +2,7 @@
 name = "scrapt"
 version = "0.1.0"
 authors = ["rabuu <dev@rbuurman.de>"]
-edition = "2021"
+edition = "2024"
 description = "Script your Scratch!"
 
 [workspace]
