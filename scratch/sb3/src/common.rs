@@ -1,3 +1,5 @@
+use std::fmt::{self, Write};
+
 use scratch_common_types::Number;
 use serde::de::Error;
 
@@ -72,12 +74,11 @@ impl<'de> Deserialize<'de> for Id {
     }
 }
 
-impl ToString for Id {
-    fn to_string(&self) -> String {
-        let mut s = String::with_capacity(20);
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for c in &self.0 {
-            s.push(*c)
+            f.write_char(*c)?;
         }
-        s
+        Ok(())
     }
 }
