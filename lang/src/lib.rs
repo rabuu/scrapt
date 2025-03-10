@@ -1,18 +1,17 @@
 use std::fmt;
 
+use chumsky::error::Rich;
 use chumsky::span::SimpleSpan;
 
 pub mod headers;
 mod lexer;
 
-pub use lexer::lexer;
-pub use lexer::Token;
+pub use lexer::{lexer, Token};
 
-type Span = SimpleSpan<usize>;
-
+type Span = SimpleSpan;
 type Spanned<T> = (T, Span);
-type ParserInput<'tok, 'src> =
-    chumsky::input::SpannedInput<Token<'src>, Span, &'tok [(Token<'src>, Span)]>;
+
+type ParserError<'src> = chumsky::extra::Err<Rich<'src, Token<'src>, Span>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ident(String);

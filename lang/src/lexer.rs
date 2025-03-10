@@ -161,7 +161,8 @@ pub fn lexer<'src>(
         }));
 
     // A parser for identifiers and keywords
-    let ident = text::ascii::ident().map(|ident: &str| match ident {
+    // FIXME: let ident = text::ascii::ident().map(|ident: &str| match ident {
+    let ident = text::unicode::ident().map(|ident: &str| match ident {
         "set" => Token::Set,
         "vars" => Token::Vars,
         "lists" => Token::Lists,
@@ -187,7 +188,7 @@ pub fn lexer<'src>(
     });
 
     // A single token can be one of the above
-    let token = number.or(string).or(symbol).or(ident);
+    let token = choice((number, string, symbol, ident));
 
     // ignore comments
     let comment = just("//")
