@@ -11,16 +11,16 @@ members = ["scratch/common", "scratch/sb3", "lang"]
 [workspace.dependencies]
 scratch-common-types = { path = "scratch/common", features = ["serde"] }
 scratch-sb3 = { path = "scratch/sb3" }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 
 [dependencies]
 scratch-common-types = { workspace = true }
 scratch-sb3 = { workspace = true }
 serde = { workspace = true }
-clap = { version = "4.5.16", features = ["derive"] }
-md-5 = "0.10.6"
-thiserror = "1.0.63"
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
-zip = "2.2.0"
-toml = "0.8.19"
+clap = { version = "4", features = ["derive"] }
+md-5 = "0.10"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+zip = "2"
+toml = "0.8"
