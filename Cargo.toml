@@ -14,6 +14,7 @@ scratch-sb3 = { path = "scratch/sb3" }
 serde = { version = "1", features = ["derive"] }
 
 [dependencies]
+scrapt-lang = { path = "lang" }
 scratch-common-types = { workspace = true }
 scratch-sb3 = { workspace = true }
 serde = { workspace = true }
