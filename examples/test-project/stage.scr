@@ -1,10 +1,10 @@
 costumes {
-   *cos1: SVG = "hey";
-   cos2: PNG;
+   backdrop1: SVG;
 }
 
 sounds {
-   s: MP4 = "yo";
+   sound1: WAV;
+   sound2: WAV = "sound2.WAV";
 }
 
 set {

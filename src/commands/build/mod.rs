@@ -120,5 +120,5 @@ pub fn build(
     //    )?;
     //}
 
-    //Ok(())
+            .join(path.unwrap_or(PathBuf::from(costume_name.inner()).with_extension(img_type.file_name)));
 }
