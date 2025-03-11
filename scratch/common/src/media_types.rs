@@ -6,6 +6,15 @@ pub enum ImgType {
     Png,
 }
 
+impl ImgType {
+    pub fn extension(&self) -> &'static str {
+        match self {
+            ImgType::Svg => "svg",
+            ImgType::Png => "png",
+        }
+    }
+}
+
 impl fmt::Display for ImgType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -19,6 +28,15 @@ impl fmt::Display for ImgType {
 pub enum AudioType {
     Wav,
     Mp4,
+}
+
+impl AudioType {
+    pub fn extension(&self) -> &'static str {
+        match self {
+            AudioType::Wav => "wav",
+            AudioType::Mp4 => "mp4",
+        }
+    }
 }
 
 impl fmt::Display for AudioType {
