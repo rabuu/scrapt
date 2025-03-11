@@ -6,7 +6,8 @@ use chumsky::input::ValueInput;
 use chumsky::prelude::*;
 use scratch_common_types::{AudioType, ImgType, Value};
 
-use crate::{Ident, ParserError, Span, Spanned, Token};
+use crate::lexer::Token;
+use crate::{Ident, ParseErr, Span, Spanned};
 
 type SetHeader = HashMap<Ident, Value>;
 type VarsHeader = HashMap<Ident, Option<Value>>;
@@ -28,7 +29,7 @@ pub struct Headers {
 
 impl Headers {
     // TODO: better validation & error msg
-    pub fn parser<'src, I>() -> impl Parser<'src, I, Headers, ParserError<'src>>
+    pub fn parser<'src, I>() -> impl Parser<'src, I, Headers, ParseErr<'src>>
     where
         I: ValueInput<'src, Token = Token<'src>, Span = Span>,
     {
@@ -95,7 +96,7 @@ impl Header {
     }
 }
 
-fn any_header<'src, I>() -> impl Parser<'src, I, Header, ParserError<'src>>
+fn any_header<'src, I>() -> impl Parser<'src, I, Header, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -109,7 +110,7 @@ where
     ))
 }
 
-fn ident<'src, I>() -> impl Parser<'src, I, Spanned<Ident>, ParserError<'src>>
+fn ident<'src, I>() -> impl Parser<'src, I, Spanned<Ident>, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -120,7 +121,7 @@ where
     .map_with(|var_name, e| (var_name, e.span()))
 }
 
-fn value<'src, I>() -> impl Parser<'src, I, Value, ParserError<'src>>
+fn value<'src, I>() -> impl Parser<'src, I, Value, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -132,13 +133,13 @@ where
 }
 
 // TODO: better validation (on values)
-fn set_header<'src, I>() -> impl Parser<'src, I, SetHeader, ParserError<'src>>
+fn set_header<'src, I>() -> impl Parser<'src, I, SetHeader, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
     let valid_setting = ident().validate(|(id, span), _, emitter| {
         if !matches!(
-            id.inner(),
+            id.as_str(),
             "tempo" | "volume" | "videoTransparency" | "videoState"
         ) {
             emitter.emit(Rich::custom(span, format!("'{id}' is no valid setting")));
@@ -170,7 +171,7 @@ where
     )
 }
 
-fn vars_header<'src, I>() -> impl Parser<'src, I, VarsHeader, ParserError<'src>>
+fn vars_header<'src, I>() -> impl Parser<'src, I, VarsHeader, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -198,7 +199,7 @@ where
     )
 }
 
-fn lists_header<'src, I>() -> impl Parser<'src, I, ListsHeader, ParserError<'src>>
+fn lists_header<'src, I>() -> impl Parser<'src, I, ListsHeader, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -234,7 +235,7 @@ where
     )
 }
 
-fn brodcasts_header<'src, I>() -> impl Parser<'src, I, BroadcastsHeader, ParserError<'src>>
+fn brodcasts_header<'src, I>() -> impl Parser<'src, I, BroadcastsHeader, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -261,7 +262,7 @@ where
 }
 
 fn costumes_header<'src, I>(
-) -> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParserError<'src>>
+) -> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
@@ -314,7 +315,7 @@ where
     )
 }
 
-fn sounds_header<'src, I>() -> impl Parser<'src, I, SoundsHeader, ParserError<'src>>
+fn sounds_header<'src, I>() -> impl Parser<'src, I, SoundsHeader, ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
