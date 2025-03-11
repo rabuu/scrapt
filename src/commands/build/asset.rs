@@ -9,10 +9,11 @@ use super::BuildError;
 pub struct Asset {
     pub path: PathBuf,
     pub hash: String,
+    pub extension: &'static str,
 }
 
 impl Asset {
-    pub fn new(path: PathBuf) -> std::io::Result<Self> {
+    pub fn new(path: PathBuf, extension: &'static str) -> std::io::Result<Self> {
         let path = path.canonicalize()?;
         let buf = fs::read(&path)?;
 
@@ -22,18 +23,12 @@ impl Asset {
 
         let hash = format!("{hash:0x}");
 
-        Ok(Self { path, hash })
+        Ok(Self { path, hash, extension })
     }
 
     pub fn filename(&self, rename: bool) -> Result<String, BuildError> {
-        let ext = self.path.extension().map(|os_str| os_str.to_str());
-
         Ok(if rename {
-            if let Some(Some(ext)) = ext {
-                format!("{}.{ext}", self.hash)
-            } else {
-                self.hash.clone()
-            }
+            format!("{}.{}", self.hash, self.extension)
         } else {
             self.path
                 .file_name()

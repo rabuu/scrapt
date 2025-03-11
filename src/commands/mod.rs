@@ -1,4 +1,4 @@
-mod build;
+pub mod build;
 mod new;
 
 pub use build::build;

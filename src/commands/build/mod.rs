@@ -1,124 +1,131 @@
-//use std::fs;
+use std::fs;
 use std::path::PathBuf;
 
-//use asset::Asset;
+use asset::Asset;
 pub use error::BuildError;
-//
-//use crate::manifest::Manifest;
+
+use crate::manifest::Manifest;
 
 mod asset;
 mod error;
 mod write;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum OutputType {
+    #[default]
+    /// Build the project to a ZIP archive (with .sb3 extension)
+    Zip,
+
+    /// Build the project to a normal directory without archiving
+    Directory,
+}
+
 pub fn build(
     project_path: PathBuf,
     manifest_path: Option<PathBuf>,
     output_file: Option<PathBuf>,
-    no_zip: bool,
+    output_type: OutputType,
 ) -> Result<(), BuildError> {
-    todo!()
-    //tracing::info!("Building...");
-    //
-    //let project_path = project_path.canonicalize()?;
-    //
-    //let manifest_path = manifest_path.unwrap_or(project_path.join("project.toml"));
-    //let manifest_scrapt = Manifest::parse(&fs::read_to_string(manifest_path)?)?;
-    //
-    //let output_file = output_file.unwrap_or_else(|| {
-    //    let mut f = PathBuf::from(".").join(
-    //        project_path
-    //            .file_name()
-    //            .map(|os_str| os_str.to_str().unwrap_or("scratch-project"))
-    //            .unwrap_or("scratch-project"),
-    //    );
-    //
-    //    if !no_zip {
-    //        f.set_extension("sb3");
-    //    }
-    //
-    //    f
-    //});
+    tracing::info!("Building...");
 
-    //let stage_path = project_path.join("stage.scr");
-    //let stage = fs::read_to_string(&stage_path).unwrap();
+    let project_path = project_path.canonicalize()?;
 
-    //tracing::debug!("Handle {:?}...", stage_path);
-    //let stage_tokens = todo!();
-    //let header_reg = todo!();
-    //
-    //let mut s_builder = scratch_sb3::Target::stage_builder();
-    //let mut assets = Vec::new();
-    //
-    //for name in &header_reg.costumes_list {
-    //    let costume = header_reg
-    //        .costumes
-    //        .get(name)
-    //        .expect("costume in list is also in db");
-    //
-    //    let path = project_path
-    //        .join(&manifest_scrapt.assets.directory)
-    //        .join(&costume.path);
-    //
-    //    if !path.is_file() {
-    //        return Err(BuildError::NoValidFileAt(path));
-    //    }
-    //
-    //    let asset = Asset::new(path)?;
-    //    assets.push(asset.clone());
-    //    s_builder = s_builder.add_costume(scratch_sb3::Asset::costume(
-    //        asset.hash.clone(),
-    //        name.clone(),
-    //        asset.filename(manifest_scrapt.assets.auto_renaming)?,
-    //        costume.img_type.file_extension().to_string(),
-    //    ));
-    //}
-    //
-    //for name in &header_reg.sounds_list {
-    //    let sound = header_reg
-    //        .sounds
-    //        .get(name)
-    //        .expect("sound in list is also in db");
-    //
-    //    let path = project_path
-    //        .join(&manifest_scrapt.assets.directory)
-    //        .join(&sound.path);
-    //
-    //    if !path.is_file() {
-    //        return Err(BuildError::NoValidFileAt(path));
-    //    }
-    //
-    //    let asset = Asset::new(path)?;
-    //    assets.push(asset.clone());
-    //    s_builder = s_builder.add_sound(scratch_sb3::Asset::sound(
-    //        asset.hash.clone(),
-    //        name.clone(),
-    //        asset.filename(manifest_scrapt.assets.auto_renaming)?,
-    //        sound.audio_type.file_extension().to_string(),
-    //    ));
-    //}
-    //
-    //let stage = s_builder
-    //    .volume(99)
-    //    .current_costume(header_reg.current_costume)
-    //    .build();
-    //
-    //let scratch_project = scratch_sb3::Project::builder(stage).build();
-    //
-    //if no_zip {
-    //    write::write_to_dir(
-    //        output_file,
-    //        scratch_project,
-    //        &assets,
-    //        manifest_scrapt.assets.auto_renaming,
-    //    )?;
-    //} else {
-    //    write::write_to_zip(
-    //        output_file,
-    //        scratch_project,
-    //        &assets,
-    //        manifest_scrapt.assets.auto_renaming,
-    //    )?;
-    //}
+    let manifest_path = manifest_path.unwrap_or(project_path.join("project.toml"));
+    let manifest_scrapt = Manifest::parse(&fs::read_to_string(manifest_path)?)?;
 
-            .join(path.unwrap_or(PathBuf::from(costume_name.inner()).with_extension(img_type.file_name)));
+    let output_file = output_file.unwrap_or_else(|| {
+        let mut f = PathBuf::from(
+            project_path
+                .file_name()
+                .map(|os_str| os_str.to_str().unwrap_or("scratch-project"))
+                .unwrap_or("scratch-project"),
+        );
+
+        if output_type == OutputType::Zip {
+            f.set_extension("sb3");
+        }
+
+        f
+    });
+
+    let stage_path = project_path.join("stage.scr");
+    let stage = fs::read_to_string(&stage_path).unwrap();
+
+    tracing::debug!("Handle {:?}...", stage_path);
+    let headers: scrapt_lang::Headers = scrapt_lang::parse(&stage).unwrap();
+
+    let mut s_builder = scratch_sb3::Target::stage_builder();
+    let mut assets = Vec::new();
+
+    for (costume_name, (filetype, path)) in &headers.costumes {
+        let file_name = match path {
+            Some(path) => path.clone(),
+            None => PathBuf::from(costume_name.to_string()).with_extension(filetype.extension()),
+        };
+
+        let path = project_path
+            .join(&manifest_scrapt.assets.directory)
+            .join(file_name);
+
+        if !path.is_file() {
+            return Err(BuildError::NoValidFileAt(path));
+        }
+
+        let asset = Asset::new(path, filetype.extension())?;
+        s_builder = s_builder.add_costume(scratch_sb3::Asset::costume(
+            asset.hash.clone(),
+            costume_name.to_string(),
+            asset.filename(manifest_scrapt.assets.auto_renaming)?,
+            filetype.extension().to_string(),
+        ));
+        assets.push(asset);
+    }
+
+    for (sound_name, (filetype, path)) in &headers.sounds {
+        let file_name = match path {
+            Some(path) => path.clone(),
+            None => PathBuf::from(sound_name.to_string()).with_extension(filetype.extension()),
+        };
+
+        let path = project_path
+            .join(&manifest_scrapt.assets.directory)
+            .join(file_name);
+
+        if !path.is_file() {
+            return Err(BuildError::NoValidFileAt(path));
+        }
+
+        let asset = Asset::new(path, filetype.extension())?;
+        s_builder = s_builder.add_sound(scratch_sb3::Asset::sound(
+            asset.hash.clone(),
+            sound_name.to_string(),
+            asset.filename(manifest_scrapt.assets.auto_renaming)?,
+            filetype.extension().to_string(),
+        ));
+        assets.push(asset);
+    }
+
+    let stage = s_builder
+        .volume(99)
+        .current_costume(headers.current_costume.map(|i| i as u32))
+        .build();
+
+    let scratch_project = scratch_sb3::Project::builder(stage).build();
+
+    match output_type {
+        OutputType::Zip => write::write_to_zip(
+            output_file,
+            scratch_project,
+            &assets,
+            manifest_scrapt.assets.auto_renaming,
+        )?,
+        OutputType::Directory => write::write_to_dir(
+            output_file,
+            scratch_project,
+            &assets,
+            manifest_scrapt.assets.auto_renaming,
+        )?,
+    }
+
+    Ok(())
 }
