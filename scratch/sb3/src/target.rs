@@ -260,12 +260,8 @@ mod builder {
             self
         }
 
-        pub fn build(mut self) -> Target {
-            if self.current_costume.is_none() && !self.costumes.is_empty() {
-                self.current_costume = Some(0);
-            }
-
-            assert!(self.current_costume.is_some());
+        pub fn build(self) -> Target {
+            debug_assert!(!self.costumes.is_empty(), "Target without costume");
 
             let stage = StageTarget {
                 tempo: self.tempo,
