@@ -4,7 +4,7 @@ use std::path::Path;
 
 use zip::write::{SimpleFileOptions, ZipWriter};
 
-use super::{asset::Asset, BuildError};
+use super::{BuildError, asset::Asset};
 
 pub fn write_to_zip(
     output_path: impl AsRef<Path>,

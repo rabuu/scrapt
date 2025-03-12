@@ -23,7 +23,11 @@ impl Asset {
 
         let hash = format!("{hash:0x}");
 
-        Ok(Self { path, hash, extension })
+        Ok(Self {
+            path,
+            hash,
+            extension,
+        })
     }
 
     pub fn filename(&self, rename: bool) -> Result<String, BuildError> {
