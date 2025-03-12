@@ -6,8 +6,8 @@ use chumsky::input::ValueInput;
 use chumsky::prelude::*;
 use scratch_common_types::{AudioType, ImgType, Value};
 
-use crate::lexer::Token;
-use crate::{Ident, ParseErr, Span, Spanned};
+use super::lexer::Token;
+use super::{Ident, ParseErr, Span, Spanned};
 
 type SetHeader = HashMap<Ident, Value>;
 type VarsHeader = HashMap<Ident, Option<Value>>;

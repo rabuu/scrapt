@@ -3,7 +3,7 @@ use std::fmt;
 use chumsky::prelude::*;
 use scratch_common_types::{AudioType, ImgType, Number};
 
-use crate::Span;
+use super::Span;
 
 // TODO: meta comments
 #[derive(Debug, Clone, PartialEq)]

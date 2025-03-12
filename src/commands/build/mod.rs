@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use asset::Asset;
 pub use error::BuildError;
 
+use crate::parsing;
 use crate::manifest::Manifest;
 
 mod asset;
@@ -52,7 +53,7 @@ pub fn build(
     let stage = fs::read_to_string(&stage_path).unwrap();
 
     tracing::debug!("Handle {:?}...", stage_path);
-    let headers: scrapt_lang::Headers = scrapt_lang::parse(&stage).unwrap();
+    let headers: parsing::Headers = parsing::parse(&stage).unwrap();
 
     let mut s_builder = scratch_sb3::Target::stage_builder();
     let mut assets = Vec::new();
