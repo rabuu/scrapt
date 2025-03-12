@@ -1,13 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-use super::*;
+pub const DEFAULT_SEMVER: &str = "3.0.0";
+pub const DEFAULT_VM: &str = "1.5.91";
+pub const DEFAULT_AGENT: &str = "Mozilla/5 (X11; U; Linux x86_64; en-US) Gecko/2010 Firefox/115";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
     #[serde(default = "default_semver")]
-    pub semver: Version,
+    pub semver: String,
     #[serde(default = "default_vm")]
-    pub vm: Version,
+    pub vm: String,
     #[serde(default = "default_agent")]
     pub agent: String,
 }
@@ -28,26 +30,25 @@ impl Default for Metadata {
     }
 }
 
-fn default_semver() -> Version {
-    Version::from("3.0.0")
+fn default_semver() -> String {
+    String::from(DEFAULT_SEMVER)
 }
 
-fn default_vm() -> Version {
-    Version::from("1.5.91")
+fn default_vm() -> String {
+    String::from(DEFAULT_VM)
 }
 
 fn default_agent() -> String {
-    String::from("Mozilla/5 (X11; U; Linux x86_64; en-US) Gecko/2010 Firefox/115")
+    String::from(DEFAULT_AGENT)
 }
 
 pub mod builder {
     use super::*;
-    use crate::Version;
 
     #[derive(Default)]
     pub struct MetadataBuilder {
-        semver: Option<Version>,
-        vm: Option<Version>,
+        semver: Option<String>,
+        vm: Option<String>,
         agent: Option<String>,
     }
 
@@ -56,12 +57,12 @@ pub mod builder {
             Default::default()
         }
 
-        pub fn semver(mut self, semver: Version) -> MetadataBuilder {
+        pub fn semver(mut self, semver: String) -> MetadataBuilder {
             self.semver = Some(semver);
             self
         }
 
-        pub fn vm(mut self, vm: Version) -> MetadataBuilder {
+        pub fn vm(mut self, vm: String) -> MetadataBuilder {
             self.vm = Some(vm);
             self
         }

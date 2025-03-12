@@ -1,4 +1,4 @@
-use sb3::Project;
+use scratch_sb3::Project;
 
 #[test]
 fn parse_scratch_manifest() {

@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
-use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
 use crate::block::Block;
-use crate::common::*;
+use crate::{Angle, Id, Name, Number, Percentage, Value};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,8 +51,8 @@ pub struct StageTarget {
 #[serde(rename_all = "camelCase")]
 pub struct SpriteTarget {
     pub visible: bool,
-    pub x: Coord,
-    pub y: Coord,
+    pub x: Number,
+    pub y: Number,
     pub size: Percentage,
     pub direction: Angle,
     pub draggable: bool,
@@ -74,10 +73,10 @@ pub type Broadcast = Name;
 #[serde(rename_all = "camelCase")]
 pub struct Comment {
     pub block_id: Id,
-    pub x: CodeCoord,
-    pub y: CodeCoord,
-    pub width: CodeCoord,
-    pub height: CodeCoord,
+    pub x: Number,
+    pub y: Number,
+    pub width: Number,
+    pub height: Number,
     pub minimized: bool,
     pub text: String,
 }
@@ -85,7 +84,7 @@ pub struct Comment {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
-    pub asset_id: AssetId,
+    pub asset_id: String,
     pub name: Name,
     pub md5ext: String,
     pub data_format: String,
@@ -95,7 +94,7 @@ pub struct Asset {
 }
 
 impl Asset {
-    pub fn costume(id: AssetId, name: Name, filename: String, data_format: String) -> Asset {
+    pub fn costume(id: String, name: Name, filename: String, data_format: String) -> Asset {
         Asset {
             asset_id: id,
             name,
@@ -103,6 +102,7 @@ impl Asset {
             data_format,
 
             // TODO
+            // FIXME
             asset_type: AssetType::Costume(CostumeAsset {
                 bitmap_resolution: None,
                 rotation_center_x: Number::Integer(240),
@@ -111,7 +111,7 @@ impl Asset {
         }
     }
 
-    pub fn sound(id: AssetId, name: Name, filename: String, data_format: String) -> Asset {
+    pub fn sound(id: String, name: Name, filename: String, data_format: String) -> Asset {
         Asset {
             asset_id: id,
             name,
@@ -140,8 +140,8 @@ pub enum AssetType {
 pub struct CostumeAsset {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bitmap_resolution: Option<Number>,
-    pub rotation_center_x: Coord,
-    pub rotation_center_y: Coord,
+    pub rotation_center_x: Number,
+    pub rotation_center_y: Number,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

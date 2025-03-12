@@ -1,31 +1,25 @@
-use scratch_common_types::Extension;
 use serde::{Deserialize, Serialize};
 
-pub use meta::Metadata;
-pub use target::{Asset, Target};
-
-mod block;
-mod common;
-mod meta;
-mod monitor;
-mod target;
-
-pub type Version = String;
+use crate::extension::Extension;
+use crate::metadata::Metadata;
+use crate::monitor::Monitor;
+use crate::target::Target;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Project {
-    pub targets: Vec<target::Target>,
-    pub monitors: Vec<monitor::Monitor>,
+    pub targets: Vec<Target>,
+    pub monitors: Vec<Monitor>,
     pub extensions: Vec<Extension>,
-    pub meta: meta::Metadata,
+    pub meta: Metadata,
 }
 
 impl Project {
-    pub fn builder(stage: target::Target) -> builder::ProjectBuilder {
+    pub fn builder(stage: Target) -> builder::ProjectBuilder {
         builder::ProjectBuilder::new(stage)
     }
 
+    // TODO: error
     pub fn parse(input: &str) -> Result<Project, String> {
         match serde_json::from_str(input) {
             Ok(m) => Ok(m),
@@ -42,14 +36,14 @@ pub mod builder {
     use super::*;
 
     pub struct ProjectBuilder {
-        targets: Vec<target::Target>,
-        monitors: Vec<monitor::Monitor>,
+        targets: Vec<Target>,
+        monitors: Vec<Monitor>,
         extensions: Vec<Extension>,
-        meta: Option<meta::Metadata>,
+        meta: Option<Metadata>,
     }
 
     impl ProjectBuilder {
-        pub fn new(stage: target::Target) -> ProjectBuilder {
+        pub fn new(stage: Target) -> ProjectBuilder {
             debug_assert!(stage.is_stage);
 
             ProjectBuilder {
@@ -60,14 +54,14 @@ pub mod builder {
             }
         }
 
-        pub fn add_sprite(mut self, sprite: target::Target) -> ProjectBuilder {
+        pub fn add_sprite(mut self, sprite: Target) -> ProjectBuilder {
             debug_assert!(!sprite.is_stage);
 
             self.targets.push(sprite);
             self
         }
 
-        pub fn add_monitor(mut self, monitor: monitor::Monitor) -> ProjectBuilder {
+        pub fn add_monitor(mut self, monitor: Monitor) -> ProjectBuilder {
             self.monitors.push(monitor);
             self
         }
@@ -77,8 +71,8 @@ pub mod builder {
             self
         }
 
-        pub fn meta(mut self, meta: meta::Metadata) -> ProjectBuilder {
-            self.meta = Some(meta);
+        pub fn metadata(mut self, metadata: Metadata) -> ProjectBuilder {
+            self.meta = Some(metadata);
             self
         }
 

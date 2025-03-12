@@ -1,9 +1,9 @@
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
-use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
-use crate::common::*;
+use crate::string_array::StringArray;
+use crate::{CodePosition, Id, IdOrPrimitiveBlock, Name, Number, Opcode, Value};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -24,7 +24,7 @@ pub enum PrimitiveBlock {
     // TODO: investigate different numeral modes
     Simple(u8, Value),
     Advanced(u8, Name, Id),
-    AdvancedWithPos(u8, Name, Id, CodeCoord, CodeCoord),
+    AdvancedWithPos(u8, Name, Id, Number, Number),
 }
 
 impl PrimitiveBlock {
@@ -47,7 +47,7 @@ pub struct FullBlock {
     // top level blocks
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub pos: Option<CodePos>,
+    pub position: Option<CodePosition>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<Id>,
@@ -58,8 +58,8 @@ pub struct FullBlock {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Input {
-    Simple(u8, IdOrPrimitive),
-    Obscuring(u8, IdOrPrimitive, IdOrPrimitive),
+    Simple(u8, IdOrPrimitiveBlock),
+    Obscuring(u8, IdOrPrimitiveBlock, IdOrPrimitiveBlock),
 }
 
 impl Input {
@@ -95,7 +95,7 @@ pub enum MutationType {
 #[serde(rename_all = "camelCase")]
 pub struct ProcedureMutation {
     pub proccode: String,
-    pub argumentids: ArgArray<Id>,
+    pub argumentids: StringArray<Id>,
 
     // TODO: maybe de/serialize it to/from bool
     pub warp: String,
@@ -114,51 +114,13 @@ pub struct ControlStopMutation {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PrototypeMutation {
-    pub argumentnames: ArgArray<String>,
-    pub argumentdefaults: ArgArray<String>,
-}
-
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(transparent)]
-pub struct ArgArray<T: ToString>(String, #[serde(skip)] PhantomData<T>);
-
-impl<T: ToString> ArgArray<T> {
-    pub fn new() -> ArgArray<T> {
-        ArgArray(String::new(), PhantomData)
-    }
-
-    pub fn with_capacity(cap: usize) -> ArgArray<T> {
-        ArgArray(String::with_capacity(cap), PhantomData)
-    }
-
-    pub fn from_slice(elems: &[T]) -> ArgArray<T> {
-        // TODO: capacity
-        // let mut argarr = ArgArray::with_capacity(??);
-
-        let mut argarr = ArgArray::new();
-        argarr.push_slice(elems);
-        argarr
-    }
-
-    pub fn push(&mut self, elem: &T) {
-        if !self.0.is_empty() {
-            self.0.push(',');
-        }
-
-        self.0.push_str(r#"[""#);
-        self.0.push_str(&(elem.to_string()));
-        self.0.push_str(r#""]"#);
-    }
-
-    pub fn push_slice(&mut self, elems: &[T]) {
-        for elem in elems {
-            self.push(elem)
-        }
-    }
+    pub argumentnames: StringArray<String>,
+    pub argumentdefaults: StringArray<String>,
 }
 
 pub mod builder {
     use super::*;
+    use crate::Angle;
 
     pub struct BlockBuilder;
 
@@ -180,7 +142,7 @@ pub mod builder {
         fields: HashMap<Name, (Value, Option<Id>)>,
         shadow: bool,
         top_level: bool,
-        pos: Option<CodePos>,
+        pos: Option<CodePosition>,
         comment: Option<Id>,
         mutation: Option<Mutation>,
     }
@@ -226,7 +188,7 @@ pub mod builder {
             self
         }
 
-        pub fn top_level_pos(mut self, pos: CodePos) -> FullBlockBuilder {
+        pub fn top_level_pos(mut self, pos: CodePosition) -> FullBlockBuilder {
             self.top_level = true;
             self.pos = Some(pos);
             self
@@ -251,7 +213,7 @@ pub mod builder {
                 fields: self.fields,
                 shadow: self.shadow,
                 top_level: self.top_level,
-                pos: self.pos,
+                position: self.pos,
                 comment: self.comment,
                 mutation: self.mutation,
             }
@@ -280,7 +242,7 @@ pub mod builder {
             PrimitiveBlock::Simple(8, Value::Number(Number::Integer(angle as i32)))
         }
 
-        pub fn color(self, color: Color) -> PrimitiveBlock {
+        pub fn color(self, color: String) -> PrimitiveBlock {
             PrimitiveBlock::Simple(9, Value::String(color))
         }
 
@@ -292,7 +254,7 @@ pub mod builder {
             PrimitiveBlock::Advanced(11, name, id)
         }
 
-        pub fn variable(self, name: Name, id: Id, pos: Option<CodePos>) -> PrimitiveBlock {
+        pub fn variable(self, name: Name, id: Id, pos: Option<CodePosition>) -> PrimitiveBlock {
             if let Some(pos) = pos {
                 PrimitiveBlock::AdvancedWithPos(12, name, id, pos.x, pos.y)
             } else {
@@ -300,7 +262,7 @@ pub mod builder {
             }
         }
 
-        pub fn list(self, name: Name, id: Id, pos: Option<CodePos>) -> PrimitiveBlock {
+        pub fn list(self, name: Name, id: Id, pos: Option<CodePosition>) -> PrimitiveBlock {
             if let Some(pos) = pos {
                 PrimitiveBlock::AdvancedWithPos(13, name, id, pos.x, pos.y)
             } else {
@@ -321,11 +283,11 @@ pub mod builder {
         }
 
         pub fn id(self, id: Id) -> Input {
-            Input::Simple(2, IdOrPrimitive::Id(id))
+            Input::Simple(2, IdOrPrimitiveBlock::Id(id))
         }
 
         pub fn primitive(self, block: PrimitiveBlock) -> Input {
-            Input::Simple(2, IdOrPrimitive::Primitive(block))
+            Input::Simple(2, IdOrPrimitiveBlock::Primitive(block))
         }
     }
 
@@ -333,11 +295,11 @@ pub mod builder {
 
     impl ShadowInputBuilder {
         pub fn id(self, id: Id) -> Input {
-            Input::Simple(1, IdOrPrimitive::Id(id))
+            Input::Simple(1, IdOrPrimitiveBlock::Id(id))
         }
 
         pub fn primitive(self, block: PrimitiveBlock) -> Input {
-            Input::Simple(1, IdOrPrimitive::Primitive(block))
+            Input::Simple(1, IdOrPrimitiveBlock::Primitive(block))
         }
     }
 
@@ -345,29 +307,29 @@ pub mod builder {
 
     impl BeginningObscuringInputBuilder {
         pub fn id(self, id: Id) -> FinishingObscuringInputBuilder {
-            FinishingObscuringInputBuilder::new(IdOrPrimitive::Id(id))
+            FinishingObscuringInputBuilder::new(IdOrPrimitiveBlock::Id(id))
         }
 
         pub fn primitive(self, block: PrimitiveBlock) -> FinishingObscuringInputBuilder {
-            FinishingObscuringInputBuilder::new(IdOrPrimitive::Primitive(block))
+            FinishingObscuringInputBuilder::new(IdOrPrimitiveBlock::Primitive(block))
         }
     }
 
     pub struct FinishingObscuringInputBuilder {
-        input: IdOrPrimitive,
+        input: IdOrPrimitiveBlock,
     }
 
     impl FinishingObscuringInputBuilder {
-        pub fn new(input: IdOrPrimitive) -> FinishingObscuringInputBuilder {
+        pub fn new(input: IdOrPrimitiveBlock) -> FinishingObscuringInputBuilder {
             FinishingObscuringInputBuilder { input }
         }
 
         pub fn shadow_id(self, id: Id) -> Input {
-            Input::Obscuring(3, self.input, IdOrPrimitive::Id(id))
+            Input::Obscuring(3, self.input, IdOrPrimitiveBlock::Id(id))
         }
 
         pub fn shadow_primitve(self, block: PrimitiveBlock) -> Input {
-            Input::Obscuring(3, self.input, IdOrPrimitive::Primitive(block))
+            Input::Obscuring(3, self.input, IdOrPrimitiveBlock::Primitive(block))
         }
     }
 
@@ -397,7 +359,7 @@ pub mod builder {
 
     pub struct ProcedureCallMutationBuilder {
         proccode: String,
-        argumentids: ArgArray<Id>,
+        argumentids: StringArray<Id>,
         warp: String,
     }
 
@@ -405,7 +367,7 @@ pub mod builder {
         pub fn new(name: &str) -> ProcedureCallMutationBuilder {
             ProcedureCallMutationBuilder {
                 proccode: String::from(name),
-                argumentids: ArgArray::new(),
+                argumentids: StringArray::new(),
                 warp: String::from("false"),
             }
         }
@@ -416,13 +378,13 @@ pub mod builder {
             self
         }
 
-        pub fn add_strnum_argument(mut self, id: &Id) -> ProcedureCallMutationBuilder {
+        pub fn add_strnum_argument(mut self, id: Id) -> ProcedureCallMutationBuilder {
             self.proccode.push_str(" %s");
             self.argumentids.push(id);
             self
         }
 
-        pub fn add_bool_argument(mut self, id: &Id) -> ProcedureCallMutationBuilder {
+        pub fn add_bool_argument(mut self, id: Id) -> ProcedureCallMutationBuilder {
             self.proccode.push_str(" %b");
             self.argumentids.push(id);
             self
@@ -449,20 +411,20 @@ pub mod builder {
 
     pub struct ProcedurePrototypeMutationBuilder {
         proccode: String,
-        argumentids: ArgArray<Id>,
+        argumentids: StringArray<Id>,
         warp: String,
-        argumentnames: ArgArray<String>,
-        argumentdefaults: ArgArray<String>,
+        argumentnames: StringArray<String>,
+        argumentdefaults: StringArray<String>,
     }
 
     impl ProcedurePrototypeMutationBuilder {
         pub fn new(name: &str) -> ProcedurePrototypeMutationBuilder {
             ProcedurePrototypeMutationBuilder {
                 proccode: String::from(name),
-                argumentids: ArgArray::new(),
+                argumentids: StringArray::new(),
                 warp: String::from("false"),
-                argumentnames: ArgArray::new(),
-                argumentdefaults: ArgArray::new(),
+                argumentnames: StringArray::new(),
+                argumentdefaults: StringArray::new(),
             }
         }
 
@@ -474,27 +436,27 @@ pub mod builder {
 
         pub fn add_strnum_argument(
             mut self,
-            id: &Id,
+            id: Id,
             name: String,
             def: String,
         ) -> ProcedurePrototypeMutationBuilder {
             self.proccode.push_str(" %s");
             self.argumentids.push(id);
-            self.argumentnames.push(&name);
-            self.argumentdefaults.push(&def);
+            self.argumentnames.push(name);
+            self.argumentdefaults.push(def);
             self
         }
 
         pub fn add_bool_argument(
             mut self,
-            id: &Id,
+            id: Id,
             name: String,
             def: bool,
         ) -> ProcedurePrototypeMutationBuilder {
             self.proccode.push_str(" %b");
             self.argumentids.push(id);
-            self.argumentnames.push(&name);
-            self.argumentdefaults.push(&format!("{}", def));
+            self.argumentnames.push(name);
+            self.argumentdefaults.push(def.to_string());
             self
         }
 
@@ -518,29 +480,5 @@ pub mod builder {
                 }),
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn deserialize_argarray() {
-        let argarray: ArgArray<String> = serde_json::from_str(r#""[\"false\"]""#).unwrap();
-
-        let mut expected = ArgArray::new();
-        expected.push(&"false".to_string());
-
-        assert_eq!(argarray, expected);
-    }
-
-    #[test]
-    fn serialize_argarray() {
-        let mut argarray = ArgArray::new();
-        argarray.push(&"hallo".to_string());
-
-        let serialized = serde_json::to_value(argarray).unwrap();
-        assert_eq!(serialized.to_string(), String::from(r#""[\"hallo\"]""#));
     }
 }

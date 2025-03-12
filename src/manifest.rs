@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-use scratch_common_types::Extension;
 use serde::{Deserialize, Serialize};
 pub use toml::de::Error as TomlDeserializationError;
 
-use scratch_sb3::Metadata;
+use scratch_sb3::extension::Extension;
+use scratch_sb3::metadata::Metadata;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manifest {

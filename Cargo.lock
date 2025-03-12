@@ -642,7 +642,6 @@ dependencies = [
  "chumsky",
  "clap",
  "md-5",
- "scratch-common-types",
  "scratch-sb3",
  "serde",
  "thiserror",
@@ -653,17 +652,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "scratch-common-types"
-version = "0.1.0"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "scratch-sb3"
 version = "0.1.0"
 dependencies = [
- "scratch-common-types",
  "serde",
  "serde_json",
 ]

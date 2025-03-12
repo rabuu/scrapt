@@ -4,8 +4,10 @@ use std::path::PathBuf;
 use asset::Asset;
 pub use error::BuildError;
 
-use crate::parsing;
+use scratch_sb3::target::Target;
+
 use crate::manifest::Manifest;
+use crate::parsing;
 
 mod asset;
 mod error;
@@ -55,7 +57,7 @@ pub fn build(
     tracing::debug!("Handle {:?}...", stage_path);
     let headers: parsing::Headers = parsing::parse(&stage).unwrap();
 
-    let mut s_builder = scratch_sb3::Target::stage_builder();
+    let mut s_builder = Target::stage_builder();
     let mut assets = Vec::new();
 
     for (costume_name, (filetype, path)) in &headers.costumes {
@@ -73,7 +75,7 @@ pub fn build(
         }
 
         let asset = Asset::new(path, filetype.extension())?;
-        s_builder = s_builder.add_costume(scratch_sb3::Asset::costume(
+        s_builder = s_builder.add_costume(scratch_sb3::target::Asset::costume(
             asset.hash.clone(),
             costume_name.to_string(),
             asset.filename(manifest_scrapt.assets.auto_renaming)?,
@@ -97,7 +99,7 @@ pub fn build(
         }
 
         let asset = Asset::new(path, filetype.extension())?;
-        s_builder = s_builder.add_sound(scratch_sb3::Asset::sound(
+        s_builder = s_builder.add_sound(scratch_sb3::target::Asset::sound(
             asset.hash.clone(),
             sound_name.to_string(),
             asset.filename(manifest_scrapt.assets.auto_renaming)?,

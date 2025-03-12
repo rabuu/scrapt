@@ -6,16 +6,13 @@ edition = "2024"
 description = "Script your Scratch!"
 
 [workspace]
-members = ["scratch/common", "scratch/sb3"]
+members = ["scratch-sb3"]
 
 [workspace.dependencies]
-scratch-common-types = { path = "scratch/common", features = ["serde"] }
-scratch-sb3 = { path = "scratch/sb3" }
 serde = { version = "1", features = ["derive"] }
 
 [dependencies]
-scratch-common-types = { workspace = true }
-scratch-sb3 = { workspace = true }
+scratch-sb3 = { path = "scratch-sb3" }
 serde = { workspace = true }
 thiserror = "2"
 tracing = "0.1"

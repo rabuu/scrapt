@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use scratch_common_types::{Number, Value};
 use serde::{Deserialize, Serialize};
 
-use super::common::*;
+use crate::{Id, Name, Number, Opcode, Value};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -14,20 +13,20 @@ pub struct Monitor {
     pub params: HashMap<Name, String>,
     pub sprite_name: Option<Name>,
     pub value: MonitorValue,
-    pub width: Coord,
-    pub height: Coord,
-    pub x: Coord,
-    pub y: Coord,
+    pub width: Number,
+    pub height: Number,
+    pub x: Number,
+    pub y: Number,
     pub visible: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(flatten)]
-    pub not_list: Option<NotListMonitor>,
+    pub slider: Option<Slider>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NotListMonitor {
+pub struct Slider {
     pub slider_min: Number,
     pub slider_max: Number,
     pub is_discrete: bool,

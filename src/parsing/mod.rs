@@ -1,9 +1,9 @@
 use std::fmt;
 
+use chumsky::Parser;
 use chumsky::error::Rich;
 use chumsky::input::Input;
 use chumsky::span::SimpleSpan;
-use chumsky::Parser;
 
 mod headers;
 mod lexer;
