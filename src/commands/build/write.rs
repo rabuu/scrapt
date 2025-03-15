@@ -4,14 +4,14 @@ use std::path::Path;
 
 use zip::write::{SimpleFileOptions, ZipWriter};
 
-use super::{BuildError, asset::Asset};
+use super::{BuildCmdError, asset::Asset};
 
 pub fn write_to_zip(
     output_path: impl AsRef<Path>,
     scratch_project: scratch_sb3::Project,
     assets: &[Asset],
     rename: bool,
-) -> Result<(), BuildError> {
+) -> Result<(), BuildCmdError> {
     tracing::info!("Writing ZIP file {:?}...", output_path.as_ref());
 
     let output_file = fs::File::create(output_path)?;
@@ -38,7 +38,7 @@ pub fn write_to_dir(
     scratch_project: scratch_sb3::Project,
     assets: &[Asset],
     rename: bool,
-) -> Result<(), BuildError> {
+) -> Result<(), BuildCmdError> {
     tracing::info!("Writing output directory {:?}...", output_dir.as_ref());
 
     fs::create_dir_all(output_dir.as_ref())?;

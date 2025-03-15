@@ -2,13 +2,13 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-pub use error::NewError;
+pub use error::NewCmdError;
 mod error;
 
 const STAGE_SCR: &str = include_str!("template/stage.scr");
 const BACKDROP_SVG: &str = include_str!("template/backdrop.svg");
 
-pub fn new(path: impl AsRef<Path>) -> Result<(), NewError> {
+pub fn new(path: impl AsRef<Path>) -> Result<(), NewCmdError> {
     tracing::info!("Create new project {:?}...", path.as_ref());
 
     let path = path.as_ref();
@@ -20,9 +20,9 @@ pub fn new(path: impl AsRef<Path>) -> Result<(), NewError> {
     let name = path.canonicalize()?;
     let name = name
         .file_name()
-        .ok_or_else(|| NewError::StrangePath(path.to_path_buf()))?
+        .ok_or_else(|| NewCmdError::StrangePath(path.to_path_buf()))?
         .to_str()
-        .ok_or_else(|| NewError::StrangePath(path.to_path_buf()))?;
+        .ok_or_else(|| NewCmdError::StrangePath(path.to_path_buf()))?;
 
     fs::File::create_new(path.join("project.toml"))?
         .write_all(format!("[project]\nname = \"{name}\"").as_bytes())?;

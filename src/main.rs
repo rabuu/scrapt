@@ -6,7 +6,7 @@ use clap::Parser;
 use cli::{CliArgs, Cmd};
 use commands::build::OutputType;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> miette::Result<()> {
     tracing_subscriber::fmt::init();
 
     let cli = CliArgs::parse();

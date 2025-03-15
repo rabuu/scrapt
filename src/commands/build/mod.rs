@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use asset::Asset;
-pub use error::BuildError;
+pub use error::BuildCmdError;
 
 use scratch_sb3::target::Target;
 
@@ -28,7 +28,7 @@ pub fn build(
     manifest_path: Option<PathBuf>,
     output_file: Option<PathBuf>,
     output_type: OutputType,
-) -> Result<(), BuildError> {
+) -> Result<(), BuildCmdError> {
     tracing::info!("Building...");
 
     let project_path = project_path.canonicalize()?;
@@ -71,7 +71,7 @@ pub fn build(
             .join(file_name);
 
         if !path.is_file() {
-            return Err(BuildError::NoValidFileAt(path));
+            return Err(BuildCmdError::NoValidFileAt(path));
         }
 
         let asset = Asset::new(path, filetype.extension())?;
@@ -95,7 +95,7 @@ pub fn build(
             .join(file_name);
 
         if !path.is_file() {
-            return Err(BuildError::NoValidFileAt(path));
+            return Err(BuildCmdError::NoValidFileAt(path));
         }
 
         let asset = Asset::new(path, filetype.extension())?;

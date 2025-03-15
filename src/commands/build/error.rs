@@ -1,26 +1,22 @@
+use miette::Diagnostic;
 use thiserror::Error;
 
 use scrapt::manifest;
 
-#[derive(Debug, Error)]
-pub enum BuildError {
-    #[error("path `{0}` couldn't be handled")]
+#[derive(Debug, Error, Diagnostic)]
+pub enum BuildCmdError {
+    #[error("Path `{0}` couldn't be handled")]
     StrangePath(std::path::PathBuf),
 
-    #[error("no valid file at `{0}`")]
+    #[error("No valid file at `{0}`")]
     NoValidFileAt(std::path::PathBuf),
 
-    //#[error("lexing unsuccessful")]
-    //LexError(#[from] LexError),
-    //
-    //#[error("parsing unsuccessful")]
-    //ParseError(#[from] ParseError),
-    #[error("problems regarding file system")]
+    #[error("I/O error")]
     IoError(#[from] std::io::Error),
 
-    #[error("failed creating the ZIP archive")]
+    #[error("Failed creating the ZIP archive")]
     ZipError(#[from] zip::result::ZipError),
 
-    #[error("couldn't parse TOML manifest")]
+    #[error("Couldn't parse TOML manifest")]
     TomlError(#[from] manifest::TomlDeserializationError),
 }

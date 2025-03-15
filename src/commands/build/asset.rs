@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use md5::{Digest, Md5};
 
-use super::BuildError;
+use super::BuildCmdError;
 
 #[derive(Debug, Clone)]
 pub struct Asset {
@@ -30,15 +30,15 @@ impl Asset {
         })
     }
 
-    pub fn filename(&self, rename: bool) -> Result<String, BuildError> {
+    pub fn filename(&self, rename: bool) -> Result<String, BuildCmdError> {
         Ok(if rename {
             format!("{}.{}", self.hash, self.extension)
         } else {
             self.path
                 .file_name()
-                .ok_or_else(|| BuildError::StrangePath(self.path.clone()))?
+                .ok_or_else(|| BuildCmdError::StrangePath(self.path.clone()))?
                 .to_str()
-                .ok_or_else(|| BuildError::StrangePath(self.path.clone()))?
+                .ok_or_else(|| BuildCmdError::StrangePath(self.path.clone()))?
                 .to_string()
         })
     }
