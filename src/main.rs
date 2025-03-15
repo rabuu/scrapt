@@ -1,8 +1,10 @@
+mod cli;
+mod commands;
+
 use clap::Parser;
 
-use scrapt::cli::{CliArgs, Cmd};
-use scrapt::commands;
-use scrapt::commands::build::OutputType;
+use cli::{CliArgs, Cmd};
+use commands::build::OutputType;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();

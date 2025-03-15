@@ -1,5 +1,6 @@
-use crate::manifest;
 use thiserror::Error;
+
+use scrapt::manifest;
 
 #[derive(Debug, Error)]
 pub enum BuildError {

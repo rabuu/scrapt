@@ -6,8 +6,8 @@ pub use error::BuildError;
 
 use scratch_sb3::target::Target;
 
-use crate::manifest::Manifest;
-use crate::parsing;
+use scrapt::manifest::Manifest;
+use scrapt::parsing;
 
 mod asset;
 mod error;
