@@ -6,10 +6,10 @@ use chumsky::input::ValueInput;
 use chumsky::prelude::*;
 
 use scratch_sb3::Value;
-use scratch_sb3::media_types::{AudioType, ImgType};
 
 use super::lexer::Token;
 use super::{Ident, ParseErr, Span, Spanned};
+use crate::media_types::{AudioType, ImgType};
 
 type SetHeader = HashMap<Ident, Value>;
 type VarsHeader = HashMap<Ident, Option<Value>>;
@@ -263,8 +263,8 @@ where
     )
 }
 
-fn costumes_header<'src, I>()
--> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
+fn costumes_header<'src, I>(
+) -> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {

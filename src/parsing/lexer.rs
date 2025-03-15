@@ -3,9 +3,9 @@ use std::fmt;
 use chumsky::prelude::*;
 
 use scratch_sb3::Number;
-use scratch_sb3::media_types::{AudioType, ImgType};
 
 use super::Span;
+use crate::media_types::{AudioType, ImgType};
 
 // TODO: meta comments
 #[derive(Debug, Clone, PartialEq)]

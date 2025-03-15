@@ -2,7 +2,6 @@ pub mod block;
 pub mod code_position;
 pub mod extension;
 pub mod id;
-pub mod media_types;
 pub mod metadata;
 pub mod monitor;
 pub mod project;
