@@ -95,8 +95,8 @@ impl fmt::Display for Token<'_> {
     }
 }
 
-pub fn lexer<'src>(
-) -> impl Parser<'src, &'src str, Vec<(Token<'src>, Span)>, extra::Err<Rich<'src, char, Span>>> {
+pub fn lexer<'src>()
+-> impl Parser<'src, &'src str, Vec<(Token<'src>, Span)>, extra::Err<Rich<'src, char, Span>>> {
     // A parser for floats
     let float = text::int(10)
         .then(just('.').then(text::digits(10)))
