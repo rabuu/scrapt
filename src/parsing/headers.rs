@@ -263,8 +263,8 @@ where
     )
 }
 
-fn costumes_header<'src, I>(
-) -> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
+fn costumes_header<'src, I>()
+-> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
 where
     I: ValueInput<'src, Token = Token<'src>, Span = Span>,
 {
