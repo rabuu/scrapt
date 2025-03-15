@@ -2,13 +2,12 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use chumsky::input::ValueInput;
 use chumsky::prelude::*;
 
 use scratch_sb3::Value;
 
 use super::lexer::Token;
-use super::{Ident, ParseErr, Span, Spanned};
+use super::{Ident, ParseErr, ParseInput, Spanned};
 use crate::media_types::{AudioType, ImgType};
 
 type SetHeader = HashMap<Ident, Value>;
@@ -31,10 +30,7 @@ pub struct Headers {
 
 impl Headers {
     // TODO: better validation & error msg
-    pub fn parser<'src, I>() -> impl Parser<'src, I, Headers, ParseErr<'src>>
-    where
-        I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-    {
+    pub fn parser<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Headers, ParseErr<'src>> {
         any_header()
             .repeated()
             .collect::<Vec<_>>()
@@ -98,10 +94,7 @@ impl Header {
     }
 }
 
-fn any_header<'src, I>() -> impl Parser<'src, I, Header, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn any_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Header, ParseErr<'src>> {
     choice((
         set_header().map(Header::Set),
         vars_header().map(Header::Vars),
@@ -112,10 +105,7 @@ where
     ))
 }
 
-fn ident<'src, I>() -> impl Parser<'src, I, Spanned<Ident>, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn ident<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Spanned<Ident>, ParseErr<'src>> {
     select! {
         Token::Ident(ident) => Ident::new(ident.to_string())
     }
@@ -123,10 +113,7 @@ where
     .map_with(|var_name, e| (var_name, e.span()))
 }
 
-fn value<'src, I>() -> impl Parser<'src, I, Value, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn value<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Value, ParseErr<'src>> {
     select! {
         Token::Number(num) => Value::Number(num),
         Token::String(string) => Value::String(string.to_string()),
@@ -135,10 +122,7 @@ where
 }
 
 // TODO: better validation (on values)
-fn set_header<'src, I>() -> impl Parser<'src, I, SetHeader, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn set_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, SetHeader, ParseErr<'src>> {
     let valid_setting = ident().validate(|(id, span), _, emitter| {
         if !matches!(
             id.as_str(),
@@ -173,10 +157,7 @@ where
     )
 }
 
-fn vars_header<'src, I>() -> impl Parser<'src, I, VarsHeader, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn vars_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, VarsHeader, ParseErr<'src>> {
     let decl = ident()
         .then(just(Token::Equals).ignore_then(value()).or_not())
         .then_ignore(just(Token::Semicolon));
@@ -201,10 +182,7 @@ where
     )
 }
 
-fn lists_header<'src, I>() -> impl Parser<'src, I, ListsHeader, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn lists_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, ListsHeader, ParseErr<'src>> {
     let list = value()
         .separated_by(just(Token::Comma))
         .allow_trailing()
@@ -237,10 +215,8 @@ where
     )
 }
 
-fn brodcasts_header<'src, I>() -> impl Parser<'src, I, BroadcastsHeader, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn brodcasts_header<'src, I: ParseInput<'src>>()
+-> impl Parser<'src, I, BroadcastsHeader, ParseErr<'src>> {
     let decl = ident().then_ignore(just(Token::Semicolon));
 
     just(Token::Broadcasts).ignore_then(
@@ -263,11 +239,8 @@ where
     )
 }
 
-fn costumes_header<'src, I>()
--> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
-{
+fn costumes_header<'src, I: ParseInput<'src>>()
+-> impl Parser<'src, I, (CostumesHeader, Option<usize>), ParseErr<'src>> {
     let img_type = select! { Token::Img(img) => img }.labelled("image type");
 
     let path = select! {
@@ -317,9 +290,7 @@ where
     )
 }
 
-fn sounds_header<'src, I>() -> impl Parser<'src, I, SoundsHeader, ParseErr<'src>>
-where
-    I: ValueInput<'src, Token = Token<'src>, Span = Span>,
+fn sounds_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, SoundsHeader, ParseErr<'src>>
 {
     let audio_type = select! { Token::Audio(audio) => audio }.labelled("audio type");
 

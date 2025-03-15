@@ -2,18 +2,22 @@ use std::fmt;
 
 use chumsky::Parser;
 use chumsky::error::Rich;
-use chumsky::input::Input;
+use chumsky::input::{Input, ValueInput};
 use chumsky::span::SimpleSpan;
 
 mod headers;
 mod lexer;
 
 pub use headers::Headers;
+use lexer::Token;
 
 type Span = SimpleSpan;
 type Spanned<T> = (T, Span);
 
 type ParseErr<'src> = chumsky::extra::Err<Rich<'src, lexer::Token<'src>, Span>>;
+
+pub trait ParseInput<'src>: ValueInput<'src, Token = Token<'src>, Span = Span> {}
+impl<'src, T: ValueInput<'src, Token = Token<'src>, Span = Span>> ParseInput<'src> for T {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ident(String);
