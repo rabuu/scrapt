@@ -1,9 +1,9 @@
 [package]
 name = "scrapt"
 version = "0.1.0"
-authors = ["rabuu <dev@rbuurman.de>"]
+authors = ["rabuu <rasmus@rbuurman.de>"]
 edition = "2024"
-description = "Script your Scratch!"
+description = "Script your Scratch"
 
 [workspace]
 members = ["scratch-sb3"]

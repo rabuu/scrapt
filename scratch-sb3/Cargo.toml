@@ -1,7 +1,9 @@
 [package]
 name = "scratch-sb3"
 version = "0.1.0"
+authors = ["rabuu <rasmus@rbuurman.de>"]
 edition = "2024"
+description = "Library for Scratch's sb3 format"
 
 [dependencies]
 serde = { workspace = true }
