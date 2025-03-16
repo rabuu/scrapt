@@ -2,6 +2,7 @@ use miette::Diagnostic;
 use thiserror::Error;
 
 use scrapt::manifest;
+use scrapt::parsing::ParsingError;
 
 #[derive(Debug, Error, Diagnostic)]
 pub enum BuildCmdError {
@@ -19,4 +20,7 @@ pub enum BuildCmdError {
 
     #[error("Couldn't parse TOML manifest")]
     TomlError(#[from] manifest::TomlDeserializationError),
+
+    #[error("Parsing failed")]
+    ParsingError(#[related] Vec<ParsingError>, #[source_code] String),
 }

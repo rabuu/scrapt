@@ -1,18 +1,18 @@
-use std::fmt;
-
-use chumsky::Parser;
-use chumsky::error::Rich;
-use chumsky::input::{Input, ValueInput};
-use chumsky::span::SimpleSpan;
-
+mod error;
 mod headers;
 mod lexer;
+mod span;
 
+use std::fmt;
+
+use chumsky::input::ValueInput;
+use chumsky::prelude::*;
+
+pub use error::ParsingError;
+use error::build_error;
 pub use headers::Headers;
 use lexer::Token;
-
-type Span = SimpleSpan;
-type Spanned<T> = (T, Span);
+pub use span::Span;
 
 type ParseErr<'src> = chumsky::extra::Err<Rich<'src, lexer::Token<'src>, Span>>;
 
@@ -38,11 +38,13 @@ impl fmt::Display for Ident {
     }
 }
 
-pub fn parse(source: &str) -> Result<Headers, Vec<()>> {
-    let (tokens, lex_errs) = lexer::lexer().parse(source).into_output_errors();
+pub fn parse(source: &str) -> Result<Headers, Vec<ParsingError>> {
+    let (tokens, lex_errs) = lexer::lexer()
+        .parse(source.map_span(Into::into))
+        .into_output_errors();
 
     let char_count = source.chars().count();
-    let end_of_input: Span = (char_count..char_count).into();
+    let end_of_input: Span = Span::marker(char_count);
 
     let parse_errs = if let Some(tokens) = &tokens {
         let (headers, parse_errs) = Headers::parser()
@@ -70,9 +72,4 @@ pub fn parse(source: &str) -> Result<Headers, Vec<()>> {
         .collect();
 
     Err(all_errors)
-}
-
-// TODO
-fn build_error(_err: Rich<String, Span>) -> () {
-    todo!()
 }

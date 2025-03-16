@@ -55,7 +55,8 @@ pub fn build(
     let stage = fs::read_to_string(&stage_path).unwrap();
 
     tracing::debug!("Handle {:?}...", stage_path);
-    let headers: parsing::Headers = parsing::parse(&stage).unwrap();
+    let headers: parsing::Headers =
+        parsing::parse(&stage).map_err(|errs| BuildCmdError::ParsingError(errs, stage))?;
 
     let mut s_builder = Target::stage_builder();
     let mut assets = Vec::new();

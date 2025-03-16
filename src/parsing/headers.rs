@@ -7,7 +7,7 @@ use chumsky::prelude::*;
 use scratch_sb3::Value;
 
 use super::lexer::Token;
-use super::{Ident, ParseErr, ParseInput, Spanned};
+use super::{Ident, ParseErr, ParseInput, Span};
 use crate::media_types::{AudioType, ImgType};
 
 type SetHeader = HashMap<Ident, Value>;
@@ -105,7 +105,7 @@ fn any_header<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Header, Parse
     ))
 }
 
-fn ident<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, Spanned<Ident>, ParseErr<'src>> {
+fn ident<'src, I: ParseInput<'src>>() -> impl Parser<'src, I, (Ident, Span), ParseErr<'src>> {
     select! {
         Token::Ident(ident) => Ident::new(ident.to_string())
     }

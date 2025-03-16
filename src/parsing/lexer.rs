@@ -1,5 +1,6 @@
 use std::fmt;
 
+use chumsky::input::MappedSpan;
 use chumsky::prelude::*;
 
 use scratch_sb3::Number;
@@ -95,8 +96,15 @@ impl fmt::Display for Token<'_> {
     }
 }
 
-pub fn lexer<'src>()
--> impl Parser<'src, &'src str, Vec<(Token<'src>, Span)>, extra::Err<Rich<'src, char, Span>>> {
+pub fn lexer<'src, F>() -> impl Parser<
+    'src,
+    MappedSpan<Span, &'src str, F>,
+    Vec<(Token<'src>, Span)>,
+    extra::Err<Rich<'src, char, Span>>,
+>
+where
+    F: Fn(SimpleSpan) -> Span + 'src,
+{
     // A parser for floats
     let float = text::int(10)
         .then(just('.').then(text::digits(10)))
@@ -212,7 +220,7 @@ mod tests {
     #[test]
     fn tokenization() {
         let (tokens, errors) = lexer()
-            .parse(r#"vars {hello: MP4 = 1.3; foo=8; [ "hello"] }"#)
+            .parse(r#"vars {hello: MP4 = 1.3; foo=8; [ "hello"] }"#.map_span(Into::into))
             .into_output_errors();
 
         assert!(errors.is_empty());
