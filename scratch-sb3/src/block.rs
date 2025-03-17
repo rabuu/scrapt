@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::string_array::StringArray;
-use crate::{CodePosition, Id, IdOrPrimitiveBlock, Name, Number, Opcode, Value};
+use crate::{Id, IdOrPrimitiveBlock, Name, Number, Opcode, Value};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -65,6 +65,18 @@ pub enum Input {
 impl Input {
     pub fn builder() -> builder::InputBuilder {
         builder::InputBuilder
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CodePosition {
+    pub x: Number,
+    pub y: Number,
+}
+
+impl CodePosition {
+    pub fn new(x: Number, y: Number) -> CodePosition {
+        CodePosition { x, y }
     }
 }
 
@@ -142,7 +154,7 @@ pub mod builder {
         fields: HashMap<Name, (Value, Option<Id>)>,
         shadow: bool,
         top_level: bool,
-        pos: Option<CodePosition>,
+        position: Option<CodePosition>,
         comment: Option<Id>,
         mutation: Option<Mutation>,
     }
@@ -157,7 +169,7 @@ pub mod builder {
                 fields: HashMap::new(),
                 shadow: false,
                 top_level: false,
-                pos: None,
+                position: None,
                 comment: None,
                 mutation: None,
             }
@@ -190,7 +202,7 @@ pub mod builder {
 
         pub fn top_level_pos(mut self, pos: CodePosition) -> FullBlockBuilder {
             self.top_level = true;
-            self.pos = Some(pos);
+            self.position = Some(pos);
             self
         }
 
@@ -213,7 +225,7 @@ pub mod builder {
                 fields: self.fields,
                 shadow: self.shadow,
                 top_level: self.top_level,
-                position: self.pos,
+                position: self.position,
                 comment: self.comment,
                 mutation: self.mutation,
             }

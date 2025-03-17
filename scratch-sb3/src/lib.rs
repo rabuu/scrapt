@@ -1,5 +1,4 @@
 pub mod block;
-pub mod code_position;
 pub mod extension;
 pub mod id;
 pub mod metadata;
@@ -9,7 +8,6 @@ pub mod string_array;
 pub mod target;
 pub mod value;
 
-pub use code_position::CodePosition;
 pub use id::Id;
 pub use project::Project;
 pub use value::{Number, Value};
